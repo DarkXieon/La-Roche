@@ -17,11 +17,10 @@ public class PickUpBall : BaseBehavior
     {
         var collidedWith = collision.gameObject;
 
-        if(collidedWith.tag == "Ball" && !collidedWith.GetComponent<BallThrownState>().WasThrown)
+        //check if the collision was with the ball and make sure it wasn't thrown by another player if it was
+        if (collidedWith.tag == "Ball" && !collidedWith.GetComponent<BallThrownState>().WasThrown) 
         {
-            Debug.Log("Found Ball");
-
-            _holdingState.StartHoldingBall(collidedWith);
+            _holdingState.StartHoldingBall(collidedWith); //Pick up the ball
         }
     }
 }

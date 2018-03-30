@@ -5,8 +5,8 @@ public class TrackRotationDirection : BaseBehavior
 {
     private void Update()
     {
-        var isRotatingLeft = this._inputState.IsPressed(InputButtons[0]);
-        var isRotatingRight = this._inputState.IsPressed(InputButtons[1]);
+        var isRotatingLeft = this._inputState.IsPressed(Buttons.TURN_LEFT);
+        var isRotatingRight = this._inputState.IsPressed(Buttons.TURN_RIGHT);
 
         if(isRotatingLeft || isRotatingRight)
         {

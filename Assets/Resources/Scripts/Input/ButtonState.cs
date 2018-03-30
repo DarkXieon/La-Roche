@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class ButtonState
 {
-    public bool IsPressed;
-    public float Value;
-    public float HoldTime = 0;
+    public bool IsPressed { get; set; }
+    public float Value { get; set; } //The Input.GetAxis value
+    public float HoldTime { get; set; }
 }

@@ -11,14 +11,14 @@ public class RotateWithMouse : BaseBehavior
         if (direction != HorisontalDirections.STATIONARY)
         {
             var button = direction == HorisontalDirections.LEFT
-                ? this.InputButtons[0]
-                : this.InputButtons[1];
+                ? Buttons.TURN_LEFT
+                : Buttons.TURN_RIGHT;
 
-            var rawRotationChange = _inputState.GetButtonValue(button);
+            var rawRotationChange = _inputState.GetButtonValue(button); //non directional rotation change
 
-            var rotationChange = rawRotationChange * (int)direction;
+            var rotationChange = rawRotationChange * (int)direction; //directional rotation change
 
-            this.transform.Rotate(transform.up, rotationChange);
+            this.transform.Rotate(transform.up, rotationChange); //change rotation
         }
     }
 }
