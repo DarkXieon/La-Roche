@@ -8,39 +8,46 @@ public class InputState : MonoBehaviour
     public HorisontalDirections RotationDirection = HorisontalDirections.RIGHT;
     public HorisontalDirections HorisontalDirection = HorisontalDirections.RIGHT;
     public LateralDirections LateralDirection = LateralDirections.FORWARD;
-    public float AbsoluteXVelocity = 0f;
-    public float AbsoluteYVelocity = 0f;
+    
+    public float AbsoluteXVelocity { get; private set; }
+    public float AbsoluteYVelocity { get; private set; }
+    public float AbsoluteZVelocity { get; private set; }
 
     private Rigidbody _body;
-    private Dictionary<Buttons, ButtonState> _buttonStates = new Dictionary<Buttons, ButtonState>();
+    private Dictionary<Buttons, ButtonState> _buttonStates; //This will be used to track all of the button states
 
     private void Awake()
     {
-        _body = GetComponent<Rigidbody>();
+        this._body = this.GetComponent<Rigidbody>();
 
-        Cursor.lockState = CursorLockMode.Locked;
+        this._buttonStates = new Dictionary<Buttons, ButtonState>();
+
+        Cursor.lockState = CursorLockMode.Locked; //This locks the players cursor in the middle of the screen and makes it invisible
     }
 
     private void FixedUpdate()
     {
-        AbsoluteXVelocity = Mathf.Abs(_body.velocity.x);
-        AbsoluteYVelocity = Mathf.Abs(_body.velocity.y);
+        this.AbsoluteXVelocity = Mathf.Abs(this._body.velocity.x); //This may be useful later once movement, throwing, and jumping are all finished
+        this.AbsoluteYVelocity = Mathf.Abs(this._body.velocity.y); //This may be useful later once movement, throwing, and jumping are all finished
+        this.AbsoluteZVelocity = Mathf.Abs(this._body.velocity.z); //This may be useful later once movement, throwing, and jumping are all finished
     }
 
     public void SetButtonValue(Buttons key, bool isPressed, float value)
     {
-        if (!_buttonStates.ContainsKey(key))
+        ButtonState state;
+        
+        if (!this._buttonStates.TryGetValue(key, out state)) //Test if the key is in the dictionary
         {
-            _buttonStates.Add(key, new ButtonState());
+            this._buttonStates.Add(key, new ButtonState()); //If not, add it
+
+            state = this._buttonStates[key]; //Then set our variable to it
         }
 
-        var state = _buttonStates[key];
-
-        if (state.IsPressed && !isPressed)
+        if (state.IsPressed && !isPressed) //If the button WAS being pressed but now it isn't...
         {
-            state.HoldTime = 0;
+            state.HoldTime = 0; 
         }
-        else if (state.IsPressed && isPressed)
+        else if (state.IsPressed && isPressed) //If the button is being held...
         {
             state.HoldTime += Time.deltaTime;
         }
@@ -53,10 +60,8 @@ public class InputState : MonoBehaviour
     public bool IsPressed(Buttons key)
     {
         ButtonState keyState;
-
-        var hasValue = _buttonStates.TryGetValue(key, out keyState);
-
-        if (hasValue)
+        
+        if (_buttonStates.TryGetValue(key, out keyState)) //Test if the key is in the dictionary
         {
             return keyState.IsPressed;
         }
@@ -73,12 +78,8 @@ public class InputState : MonoBehaviour
     public float GetButtonValue(Buttons key)
     {
         ButtonState keyState;
-
-        var hasValue = _buttonStates.TryGetValue(key, out keyState);
-
-        Debug.Log(_buttonStates.ContainsKey(key));
-
-        if(hasValue)
+        
+        if(_buttonStates.TryGetValue(key, out keyState)) //Test if the key is in the dictionary
         {
             return keyState.Value;
         }
@@ -95,10 +96,8 @@ public class InputState : MonoBehaviour
     public float GetButtonHoldTime(Buttons key)
     {
         ButtonState keyState;
-
-        var hasValue = _buttonStates.TryGetValue(key, out keyState);
-
-        if (hasValue)
+        
+        if (_buttonStates.TryGetValue(key, out keyState))
         {
             return keyState.HoldTime;
         }

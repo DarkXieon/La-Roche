@@ -4,8 +4,6 @@ using UnityEngine;
 
 public abstract class BaseBehavior : MonoBehaviour
 {
-    public Buttons[] InputButtons;
-
     protected InputState _inputState;
     protected Rigidbody _body;
 

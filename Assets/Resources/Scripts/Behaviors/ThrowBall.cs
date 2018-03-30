@@ -16,17 +16,17 @@ public class ThrowBall : BaseBehavior
 
     private void Update()
     {
-        if(_inputState.IsPressed(this.InputButtons[0]) && _holdingState.HoldingBall)
+        if(_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall)
         {
             var ball = _holdingState.StopHoldingBall();
 
             var ballBody = ball.GetComponent<Rigidbody>();
 
-            var forceAxis = _holdingState.HoldingIn.forward;
+            var forceAxis = _holdingState.HoldingIn.forward; //the forward axis relative to the object's current rotation
 
             var force = forceAxis * ThrowPower;
 
-            ballBody.AddForce(force, ForceMode.VelocityChange);
+            ballBody.AddForce(force, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
         }
     }
 }

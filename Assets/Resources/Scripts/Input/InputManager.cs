@@ -4,14 +4,17 @@ using System;
 
 public class InputManager : MonoBehaviour
 {
-    public InputAxisState[] Inputs;
-    public InputState InputState;
+    [SerializeField]
+    private InputAxisState[] _inputs; //Array of inputs recieved from Input.GetAxis and stored for processing
+
+    [SerializeField]
+    private InputState _inputState; //The input state that is to be managed
 
     private void Update()
     {
-        foreach (var input in Inputs)
+        foreach (var input in this._inputs)
         {
-            InputState.SetButtonValue(input.Button, input.IsPressed, input.Value);
+            this._inputState.SetButtonValue(input.Button, input.IsPressed, input.Value); //This updates all of the states of the button presses
         }
     }
 }
