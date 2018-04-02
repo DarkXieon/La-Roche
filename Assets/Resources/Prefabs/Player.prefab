@@ -284,7 +284,11 @@ MonoBehaviour:
   jump: {x: 0, y: 0, z: 0}
   jumpForce: 2
   velocityTest: 0.5
-  isGrounded: 0
+  CollisionLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  gizmoPosition: {x: 0, y: -0.59, z: 0}
+  radius: 0.49
 --- !u!114 &114666820411429744
 MonoBehaviour:
   m_ObjectHideFlags: 1
