@@ -18,7 +18,7 @@ public class Jump : BaseBehavior {
     public Vector3 gizmoPosition;
     public float radius;
 
-    void Update ()
+    void FixedUpdate ()
     {
         bool isTouchingGround = Physics.CheckSphere(this.transform.position + gizmoPosition, radius, CollisionLayer); // sees if the gizmo is colliding with terrain
 
