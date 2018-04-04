@@ -10,6 +10,14 @@ public class InputManager : MonoBehaviour
     [SerializeField]
     private InputState _inputState; //The input state that is to be managed
 
+    private void Start()
+    {
+        foreach (var input in this._inputs)
+        {
+            this._inputState.SetButtonValue(input.Button, false, 0); //This updates all of the states of the button presses
+        }
+    }
+
     private void Update()
     {
         foreach (var input in this._inputs)
