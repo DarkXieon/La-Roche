@@ -8,5 +8,6 @@
     TURN_RIGHT,
     AIM_UP,
     AIM_DOWN,
-    THROW
+    THROW,
+    JUMP
 }
