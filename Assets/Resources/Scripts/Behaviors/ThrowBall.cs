@@ -3,10 +3,13 @@ using System.Collections;
 
 public class ThrowBall : BaseBehavior
 {
-    private float _maxThrowPower = 10f;
+    [SerializeField]
+    private float _maxThrowPower = 1000f;
 
-    private float _minThrowPower = 4f;
+    [SerializeField]
+    private float _minThrowPower = 400f;
 
+    [SerializeField]
     private float _maxPowerHoldTime = 1f;
 
     private PlayerHoldingState _holdingState;
