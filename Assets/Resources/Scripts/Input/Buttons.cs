@@ -1,7 +1,6 @@
 ﻿public enum Buttons
 {
     FORWARD,
-    BACK,
     LEFT,
     RIGHT,
     TURN_LEFT,
@@ -9,5 +8,6 @@
     AIM_UP,
     AIM_DOWN,
     THROW,
-    JUMP
+    JUMP,
+    BACK
 }

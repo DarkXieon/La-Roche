@@ -72,4 +72,24 @@ MonoBehaviour:
     _offValue: 0
     _button: 7
     _condition: 0
+  - _axisName: Jump
+    _offValue: 0
+    _button: 8
+    _condition: 0
+  - _axisName: Horizontal
+    _offValue: 0
+    _button: 1
+    _condition: 1
+  - _axisName: Horizontal
+    _offValue: 0
+    _button: 2
+    _condition: 0
+  - _axisName: Vertical
+    _offValue: 0
+    _button: 0
+    _condition: 0
+  - _axisName: Vertical
+    _offValue: 0
+    _button: 9
+    _condition: 1
   _inputState: {fileID: 0}
