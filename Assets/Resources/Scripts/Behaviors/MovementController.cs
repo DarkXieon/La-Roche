@@ -12,9 +12,16 @@ public class MovementController : MonoBehaviour
     public bool isUsersTurn = true; // Set to true if it's the player's turn (they have the ball)
     public bool isPlayerOut = false;    // Is set to true if the player gets out
 
+    private PlayerHoldingState _holdingState;
+    private PlayerFrozenState _frozenState;
+
     void Start()
     {
         timeLeft = movementTimeLimit;   // Set the time that the user has to move to the movementTimeLimit
+
+        _holdingState = GetComponent<PlayerHoldingState>();
+
+        _frozenState = GetComponent<PlayerFrozenState>();
     }
 
     // For each frame...
@@ -23,13 +30,14 @@ public class MovementController : MonoBehaviour
         // Get the input from the user
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
-
+    
         // If it's the user's turn, they're not out, and they still have time
-        if (isUsersTurn && !isPlayerOut && timeLeft > 0)
+        if ((isUsersTurn && !isPlayerOut && timeLeft > 0 && !_frozenState.IsFrozen)/* || !_holdingState.HoldingBall*/)
         {
-            // Decrease the time
-            timeLeft -= Time.deltaTime;
-            Debug.Log("Movement Time Left: " + timeLeft);    // Done for testing purposes
+            if(isUsersTurn && !isPlayerOut && timeLeft > 0)
+                // Decrease the time
+                timeLeft -= Time.deltaTime;
+            //Debug.Log("Movement Time Left: " + timeLeft);    // Done for testing purposes
             // Move the player
             transform.Translate(moveSpeed * horizontalInput * Time.deltaTime, 0f, moveSpeed * verticalInput * Time.deltaTime); // Time.deltaTime normalizes the speed (due to differences like fps)
         }   // If they run out of time...
@@ -37,6 +45,11 @@ public class MovementController : MonoBehaviour
         {
             // Set isUsersTurn to false
             isUsersTurn = false;
+        }
+        if(!_holdingState.HoldingBall)
+        {
+            isUsersTurn = true;
+
             timeLeft = movementTimeLimit;   // Set the timeLeft back to movementTimeLimit, so when it's their turn again they have time to do something
         }
     }

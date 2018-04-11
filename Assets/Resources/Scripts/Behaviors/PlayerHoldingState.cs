@@ -6,11 +6,22 @@ public class PlayerHoldingState : MonoBehaviour
     public Transform HoldingIn { get { return _holdInParent; } } //The transform of the object used as a fulcrum
 
     public bool HoldingBall { get; private set; } //Is the player holding the ball or not
-
+    
     [SerializeField]
     private Transform _holdInParent; //The transform of the object used as a fulcrum
 
     private GameObject _ball; //Is the ball IF the player is holding it. Otherwise it's null
+
+    [SerializeField]
+    private float _maxHoldTime = 15f;
+    
+    private float _timeLeft;
+
+    [SerializeField]
+    private float _verticalAutoTossVelocity = 10f;
+
+    [SerializeField]
+    private float _horisontalAutoTossVelocity = 3f;
 
     private Vector3 _ballChildTransform //Where to set the ball when the player holds it
     {
@@ -22,8 +33,40 @@ public class PlayerHoldingState : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        
+        if(HoldingBall && _timeLeft > 0)
+        {
+            _timeLeft -= Time.deltaTime;
+        }
+        else if(HoldingBall && _timeLeft <= 0)
+        {
+            var ball = StopHoldingBall();
+
+            var body = ball.GetComponent<Rigidbody>();
+
+            var randomGenerator = new System.Random();
+
+            var xVel = randomGenerator.Next(-1, 1) * _horisontalAutoTossVelocity;
+
+            var zVel = randomGenerator.Next(-1, 1) * _horisontalAutoTossVelocity;
+
+            var force = new Vector3(xVel, _verticalAutoTossVelocity, zVel);
+
+            body.AddForce(force, ForceMode.VelocityChange);
+            
+            var freeze = GetComponent<PlayerFrozenState>();
+
+            freeze.FreezeOnTimer(5f);
+        }
+        
+    }
+
     public void StartHoldingBall(GameObject ball)
     {
+        _timeLeft = _maxHoldTime;
+
         if(ball.tag == "Ball") //The game ball should be the ONLY gameobject with that tag
         {
             var ballBody = ball.GetComponent<Rigidbody>();

@@ -8,10 +8,14 @@ public class Jump : BaseBehavior {
     public float jumpForce = 2.0f;
     public float velocityTest = 0.5f;
 
+    private PlayerFrozenState _playerFrozenState;
+
     protected override void Awake()
     {
         base.Awake();
         jump = new Vector3(0.0f, 2.0f, 0.0f); // set jump height value here
+
+        _playerFrozenState = GetComponent<PlayerFrozenState>();
     }
 
     public LayerMask CollisionLayer;
@@ -22,13 +26,13 @@ public class Jump : BaseBehavior {
     {
         bool isTouchingGround = Physics.CheckSphere(this.transform.position + gizmoPosition, radius, CollisionLayer); // sees if the gizmo is colliding with terrain
         //Debug.Log(isTouchingGround);
-        if (_inputState.IsPressed(Buttons.JUMP) && isTouchingGround) // checks if jump button is pressed and gizmo is colliding with terrain
+        if (_inputState.IsPressed(Buttons.JUMP) && isTouchingGround && !_playerFrozenState.IsFrozen) // checks if jump button is pressed and gizmo is colliding with terrain
         {
             //var quickfix = this.transform.up;
             _body.AddForce(jump * jumpForce, ForceMode.VelocityChange);
             isTouchingGround = false;
         }
-        Debug.Log(isTouchingGround);
+        //Debug.Log(isTouchingGround);
 	}
 
     private void OnDrawGizmos() // creates a gizmo

@@ -25,18 +25,20 @@ public class ThrowBall : BaseBehavior
 
     private void Update()
     {
-        Debug.Log(_inputState.IsPressed(Buttons.THROW));
+        //Debug.Log(_inputState.IsPressed(Buttons.THROW));
         if (_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall) //if the throw button is pressed and the player is holding the ball...
         {
             Debug.Log(_currentHoldTime);
             _currentHoldTime = _inputState.GetButtonHoldTime(Buttons.THROW);
         }
-        else if (!_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall && _currentHoldTime != 0f) //if the throw button is not pressed, the player is holding the ball, and the player WAS holding the throw button
+        else if (!_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall && _currentHoldTime > 0f) //if the throw button is not pressed, the player is holding the ball, and the player WAS holding the throw button
         {
             Debug.Log("It's working");
             var ball = _holdingState.StopHoldingBall();
 
             var ballBody = ball.GetComponent<Rigidbody>();
+
+            var ballState = ball.GetComponent<BallThrownState>();
 
             var forceAxis = _holdingState.HoldingIn.forward; //the forward axis relative to the object's current rotation
 
@@ -49,6 +51,8 @@ public class ThrowBall : BaseBehavior
             ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
 
             _currentHoldTime = 0f;
+
+            ballState.WasThrown = true;
         }
     }
 }
