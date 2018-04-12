@@ -21,9 +21,10 @@ public class Jump : BaseBehavior {
     void FixedUpdate ()
     {
         bool isTouchingGround = Physics.CheckSphere(this.transform.position + gizmoPosition, radius, CollisionLayer); // sees if the gizmo is colliding with terrain
-
+        //Debug.Log(isTouchingGround);
         if (_inputState.IsPressed(Buttons.JUMP) && isTouchingGround) // checks if jump button is pressed and gizmo is colliding with terrain
         {
+            //var quickfix = this.transform.up;
             _body.AddForce(jump * jumpForce, ForceMode.VelocityChange);
             isTouchingGround = false;
         }
