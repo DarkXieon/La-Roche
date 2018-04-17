@@ -5,16 +5,18 @@ using UnityEngine;
 //This is for the test builds I give to the design team
 public class RecallBall : MonoBehaviour
 {
+    public Transform RecallTo;
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            var player = GameObject.FindGameObjectWithTag("Player");
+            var player = RecallTo;
             var ball = GameObject.FindGameObjectWithTag("Ball");
 
             ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
 
-            ball.transform.position = new Vector3(player.transform.position.x, player.transform.position.y + 2, player.transform.position.z);
+            ball.transform.position = new Vector3(player.position.x + .5f, player.position.y + 2, player.position.z);
         }
     }
 }

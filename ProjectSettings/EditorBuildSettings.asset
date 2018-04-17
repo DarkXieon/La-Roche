@@ -4,4 +4,13 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Resources/Scenes/OpenScene.unity
+    guid: 70df8288a39e99c46883d2f09d72876d
+  - enabled: 1
+    path: Assets/Resources/Scenes/Online Scene.unity
+    guid: f7acabb112fd0fa468d5089847bf8f45
+  - enabled: 0
+    path: Assets/Resources/Scenes/NewThrowMechanics.unity
+    guid: f80ee5feea5c93e40b8f1ea80e5e0880
