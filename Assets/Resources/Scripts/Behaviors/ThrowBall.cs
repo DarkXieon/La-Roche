@@ -15,7 +15,7 @@ public class ThrowBall : BaseBehavior
     private PlayerHoldingState _holdingState;
 
     private float _currentHoldTime;
-
+    
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();

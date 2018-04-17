@@ -13,7 +13,7 @@ public class Jump : BaseBehavior {
     public LayerMask CollisionLayer;
     public Vector3 gizmoPosition;
     public float radius;
-
+  
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
@@ -38,7 +38,7 @@ public class Jump : BaseBehavior {
             //Debug.Log(isTouchingGround);
         }
     }
-
+  
     private void OnDrawGizmos() // creates a gizmo
     {
         Gizmos.DrawSphere(this.transform.position + gizmoPosition, radius); // sets gizmo origin and causes gizmo to follow player
