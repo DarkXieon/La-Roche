@@ -15,8 +15,6 @@ namespace Prototype.NetworkLobby
 
         public static new LobbyManager singleton;
 
-        public GameObject Camera;
-
         [Header("Unity UI Lobby")]
         [Tooltip("Time in second between all players ready & match start")]
         public float prematchCountdown = 5.0f;
