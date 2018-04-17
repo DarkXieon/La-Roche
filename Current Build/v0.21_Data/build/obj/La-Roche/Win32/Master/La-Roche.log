@@ -1,0 +1,15 @@
+﻿  pch.cpp
+  App.cpp
+  Main.cpp
+  UnityGenerated.cpp
+c:\users\public\documents\unity projects\la-roche\current build\v0.21_data\la-roche\app.cpp(26): warning C4973: 'Windows::UI::ViewManagement::IApplicationView2::SuppressSystemOverlays::set': marked as deprecated
+  c:\users\public\documents\unity projects\la-roche\current build\v0.21_data\la-roche\app.cpp(26): note: Message: 'Use the TryEnterFullScreen method and IsFullScreenMode property instead of SuppressSystemOverlays. For more info, see MSDN.'
+  Generating code
+  0 of 160 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  La-Roche.vcxproj -> C:\Users\Public\Documents\Unity Projects\La-Roche\Current Build\v0.21_Data\build\bin\Win32\Master\La-Roche.exe
+GENERATEPROJECTPRIFILE : warning PRI249: 0xdef00520 - Invalid qualifier: DLL-RESOURCES
+GENERATEPROJECTPRIFILE : warning PRI249: 0xdef00520 - Invalid qualifier: DLL-RESOURCES
+GENERATEPROJECTPRIFILE : warning PRI249: 0xdef00520 - Invalid qualifier: DLL-RESOURCES

@@ -21,7 +21,9 @@ public class BallThrownState : NetworkBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(isLocalPlayer)
+        var networkIdentity = GetComponent<NetworkIdentity>();
+
+        if(networkIdentity != null && isLocalPlayer)
         {
             var frozenState = collision.gameObject.GetComponent<PlayerFrozenState>();
 
