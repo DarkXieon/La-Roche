@@ -8,9 +8,9 @@ public class PickUpBall : BaseBehavior
 
     private PlayerFrozenState _frozenState;
 
-    protected override void Awake()
+    public override void OnStartLocalPlayer()
     {
-        base.Awake();
+        base.OnStartLocalPlayer();
 
         _holdingState = this.GetComponent<PlayerHoldingState>();
 
@@ -19,7 +19,7 @@ public class PickUpBall : BaseBehavior
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(!_frozenState.IsFrozen)
+        if(isLocalPlayer && !_frozenState.IsFrozen)
         {
             var collidedWith = collision.gameObject;
 

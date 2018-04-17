@@ -10,30 +10,34 @@ public class Jump : BaseBehavior {
 
     private PlayerFrozenState _playerFrozenState;
 
-    protected override void Awake()
+    public LayerMask CollisionLayer;
+    public Vector3 gizmoPosition;
+    public float radius;
+
+    public override void OnStartLocalPlayer()
     {
-        base.Awake();
+        base.OnStartLocalPlayer();
+
         jump = new Vector3(0.0f, 2.0f, 0.0f); // set jump height value here
 
         _playerFrozenState = GetComponent<PlayerFrozenState>();
     }
 
-    public LayerMask CollisionLayer;
-    public Vector3 gizmoPosition;
-    public float radius;
-
-    void Update ()
+    private void Update ()
     {
-        bool isTouchingGround = Physics.CheckSphere(this.transform.position + gizmoPosition, radius, CollisionLayer); // sees if the gizmo is colliding with terrain
-        //Debug.Log(isTouchingGround);
-        if (_inputState.IsPressed(Buttons.JUMP) && isTouchingGround && !_playerFrozenState.IsFrozen) // checks if jump button is pressed and gizmo is colliding with terrain
+        if(isLocalPlayer)
         {
-            //var quickfix = this.transform.up;
-            _body.AddForce(jump * jumpForce, ForceMode.VelocityChange);
-            isTouchingGround = false;
+            bool isTouchingGround = Physics.CheckSphere(this.transform.position + gizmoPosition, radius, CollisionLayer); // sees if the gizmo is colliding with terrain
+                                                                                                                          //Debug.Log(isTouchingGround);
+            if (_inputState.IsPressed(Buttons.JUMP) && isTouchingGround && !_playerFrozenState.IsFrozen) // checks if jump button is pressed and gizmo is colliding with terrain
+            {
+                //var quickfix = this.transform.up;
+                _body.AddForce(jump * jumpForce, ForceMode.VelocityChange);
+                isTouchingGround = false;
+            }
+            //Debug.Log(isTouchingGround);
         }
-        //Debug.Log(isTouchingGround);
-	}
+    }
 
     private void OnDrawGizmos() // creates a gizmo
     {

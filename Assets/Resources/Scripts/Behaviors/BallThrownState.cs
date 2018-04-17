@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class BallThrownState : MonoBehaviour
+public class BallThrownState : NetworkBehaviour
 {
     public bool WasThrown = false;
 
@@ -20,16 +21,19 @@ public class BallThrownState : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        var frozenState = collision.gameObject.GetComponent<PlayerFrozenState>();
-        
-        if (WasThrown && collision.gameObject.tag == "Player" && frozenState != null)
+        if(isLocalPlayer)
         {
-            Debug.Log("time to freeze");
+            var frozenState = collision.gameObject.GetComponent<PlayerFrozenState>();
 
-            frozenState.Freeze();
+            if (WasThrown && collision.gameObject.tag == "Player" && frozenState != null)
+            {
+                Debug.Log("time to freeze");
+
+                frozenState.Freeze();
+            }
+
+            _updateNextFrame = true;
         }
-
-        _updateNextFrame = true;
     }
     //So far this is all that this does--will likely do more in the future
 }

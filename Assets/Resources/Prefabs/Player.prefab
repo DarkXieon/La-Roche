@@ -50,8 +50,13 @@ GameObject:
   - component: {fileID: 114909754650012540}
   - component: {fileID: 114176227111040624}
   - component: {fileID: 114632245974937532}
-  - component: {fileID: 114749241447776704}
-  - component: {fileID: 114430993991007374}
+  - component: {fileID: 114743988313069604}
+  - component: {fileID: 114398739825479216}
+  - component: {fileID: 114268863985730084}
+  - component: {fileID: 114199415832203300}
+  - component: {fileID: 114759003848752668}
+  - component: {fileID: 114040901550580034}
+  - component: {fileID: 114143957982130540}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -205,7 +210,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!81 &81316484039783530
 AudioListener:
@@ -214,6 +219,18 @@ AudioListener:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1105453091241430}
   m_Enabled: 1
+--- !u!114 &114040901550580034
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1643789400508948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfcd876aae8b6c74d82d367731b8644c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isFrozen: 0
 --- !u!114 &114113961698302318
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -223,6 +240,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6630e9ada6b2e13438f93bfa63a00c99, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &114143957982130540
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1643789400508948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260cbe94dbc5bff4bac397497bbf3e54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &114176227111040624
@@ -238,6 +266,80 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MinAimRotation: 1
   MaxAimRotation: 30
+--- !u!114 &114199415832203300
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1643789400508948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TransformSyncMode: 3
+  m_SendInterval: 0.1
+  m_SyncRotationAxis: 7
+  m_RotationSyncCompression: 0
+  m_SyncSpin: 0
+  m_MovementTheshold: 0.001
+  m_VelocityThreshold: 0.0001
+  m_SnapThreshold: 5
+  m_InterpolateRotation: 1
+  m_InterpolateMovement: 1
+--- !u!114 &114268863985730084
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1643789400508948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f090decbd48df74439f5bbde2723b20b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _inputs:
+  - _axisName: Mouse X
+    _offValue: 0
+    _button: 3
+    _condition: 1
+  - _axisName: Mouse X
+    _offValue: 0
+    _button: 4
+    _condition: 0
+  - _axisName: Mouse Y
+    _offValue: 0
+    _button: 5
+    _condition: 0
+  - _axisName: Mouse Y
+    _offValue: 0
+    _button: 6
+    _condition: 1
+  - _axisName: Fire1
+    _offValue: 0
+    _button: 7
+    _condition: 0
+  - _axisName: Jump
+    _offValue: 0
+    _button: 8
+    _condition: 0
+  - _axisName: Horizontal
+    _offValue: 0
+    _button: 1
+    _condition: 1
+  - _axisName: Horizontal
+    _offValue: 0
+    _button: 2
+    _condition: 0
+  - _axisName: Vertical
+    _offValue: 0
+    _button: 0
+    _condition: 0
+  - _axisName: Vertical
+    _offValue: 0
+    _button: 9
+    _condition: 1
+  _inputState: {fileID: 114666820411429744}
 --- !u!114 &114334421291704240
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -247,6 +349,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 048e33c718de9ef428dc12d04ba3c432, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &114398739825479216
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1643789400508948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c91152b7d4cfbea44b1ab091f5625d9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &114415635307839202
@@ -261,18 +374,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _holdInParent: {fileID: 4874872590436636}
---- !u!114 &114430993991007374
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1643789400508948}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e33dc6cb2a0e494f99588e2f8168b89, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _movementSpeed: 2
+  _maxHoldTime: 15
+  _verticalAutoTossVelocity: 10
+  _horisontalAutoTossVelocity: 3
+  _holdingBall: 0
 --- !u!114 &114588141669423322
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -317,7 +422,7 @@ MonoBehaviour:
   RotationDirection: 1
   HorisontalDirection: 1
   LateralDirection: 1
---- !u!114 &114749241447776704
+--- !u!114 &114743988313069604
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -325,10 +430,45 @@ MonoBehaviour:
   m_GameObject: {fileID: 1643789400508948}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95beeb841d8e37d4aa3d1abed35ebfff, type: 3}
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _movementSpeed: 2
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 29
+    i1: 91
+    i2: 61
+    i3: 46
+    i4: 235
+    i5: 241
+    i6: 143
+    i7: 36
+    i8: 42
+    i9: 83
+    i10: 145
+    i11: 141
+    i12: 55
+    i13: 82
+    i14: 23
+    i15: 161
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 1
+--- !u!114 &114759003848752668
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1643789400508948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a34c38a2fc02db4d9591f150af83131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movementTimeLimit: 5
+  moveSpeed: 10
+  isUsersTurn: 1
+  isPlayerOut: 0
 --- !u!114 &114909754650012540
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -340,6 +480,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93c2b6c0403860447ad0c8632d21c0b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _maxThrowPower: 1000
+  _minThrowPower: 400
+  _maxPowerHoldTime: 1
 --- !u!124 &124051922332523684
 Behaviour:
   m_ObjectHideFlags: 1

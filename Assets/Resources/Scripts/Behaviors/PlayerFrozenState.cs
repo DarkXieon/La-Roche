@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class PlayerFrozenState : MonoBehaviour
+public class PlayerFrozenState : NetworkBehaviour
 {
     public bool IsFrozen { get { return _isFrozen; } }
 
-    [SerializeField]
+    [SerializeField] [SyncVar]
     private bool _isFrozen = false;
     
+    //[SyncVar]
     private float? _timeLeft;
 
     private void Update()

@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class PlayerHoldingState : MonoBehaviour
+public class PlayerHoldingState : NetworkBehaviour
 {
     public Transform HoldingIn { get { return _holdInParent; } } //The transform of the object used as a fulcrum
-
-    public bool HoldingBall { get; private set; } //Is the player holding the ball or not
+    
+    public bool HoldingBall { get { return _holdingBall; } } //Is the player holding the ball or not
     
     [SerializeField]
     private Transform _holdInParent; //The transform of the object used as a fulcrum
@@ -23,6 +24,9 @@ public class PlayerHoldingState : MonoBehaviour
     [SerializeField]
     private float _horisontalAutoTossVelocity = 3f;
 
+    [SerializeField] [SyncVar]
+    private bool _holdingBall;
+
     private Vector3 _ballChildTransform //Where to set the ball when the player holds it
     {
         get
@@ -35,12 +39,11 @@ public class PlayerHoldingState : MonoBehaviour
 
     private void Update()
     {
-        
-        if(HoldingBall && _timeLeft > 0)
+        if (_holdingBall && _timeLeft > 0)
         {
             _timeLeft -= Time.deltaTime;
         }
-        else if(HoldingBall && _timeLeft <= 0)
+        else if (_holdingBall && _timeLeft <= 0)
         {
             var ball = StopHoldingBall();
 
@@ -55,7 +58,7 @@ public class PlayerHoldingState : MonoBehaviour
             var force = new Vector3(xVel, _verticalAutoTossVelocity, zVel);
 
             body.AddForce(force, ForceMode.VelocityChange);
-            
+
             var freeze = GetComponent<PlayerFrozenState>();
 
             freeze.FreezeOnTimer(5f);
@@ -82,7 +85,7 @@ public class PlayerHoldingState : MonoBehaviour
 
             ball.transform.parent = _holdInParent.transform; //makes the ball a child to the ball container
 
-            HoldingBall = true; //make sure we know for later we are holding it
+            _holdingBall = true; //make sure we know for later we are holding it
 
             _ball = ball; //set it so it's no longer null
         }
@@ -111,7 +114,7 @@ public class PlayerHoldingState : MonoBehaviour
 
             ball.transform.parent = null;
 
-            HoldingBall = false;
+            _holdingBall = false;
 
             _ball = null;
         }
