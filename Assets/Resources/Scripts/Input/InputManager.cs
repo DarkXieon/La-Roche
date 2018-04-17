@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using UnityEngine.Networking;
 
-public class InputManager : MonoBehaviour
+public class InputManager : NetworkBehaviour
 {
     [SerializeField]
     private InputAxisState[] _inputs; //Array of inputs recieved from Input.GetAxis and stored for processing
@@ -10,7 +11,7 @@ public class InputManager : MonoBehaviour
     [SerializeField]
     private InputState _inputState; //The input state that is to be managed
 
-    private void Start()
+    public override void OnStartLocalPlayer()
     {
         foreach (var input in this._inputs)
         {
@@ -20,9 +21,12 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
-        foreach (var input in this._inputs)
+        if(isLocalPlayer)
         {
-            this._inputState.SetButtonValue(input.Button, input.IsPressed, input.Value); //This updates all of the states of the button presses
+            foreach (var input in this._inputs)
+            {
+                this._inputState.SetButtonValue(input.Button, input.IsPressed, input.Value); //This updates all of the states of the button presses
+            }
         }
     }
 }

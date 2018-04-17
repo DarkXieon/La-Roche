@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine.Networking;
 
-public class InputState : MonoBehaviour
+public class InputState : NetworkBehaviour
 {
     public HorisontalDirections RotationDirection = HorisontalDirections.RIGHT;
     public HorisontalDirections HorisontalDirection = HorisontalDirections.RIGHT;
@@ -16,7 +17,7 @@ public class InputState : MonoBehaviour
     private Rigidbody _body;
     private Dictionary<Buttons, ButtonState> _buttonStates; //This will be used to track all of the button states
 
-    private void Awake()
+    public override void OnStartLocalPlayer()
     {
         this._body = this.GetComponent<Rigidbody>();
 
@@ -27,9 +28,12 @@ public class InputState : MonoBehaviour
 
     private void FixedUpdate()
     {
-        this.AbsoluteXVelocity = Mathf.Abs(this._body.velocity.x); //This may be useful later once movement, throwing, and jumping are all finished
-        this.AbsoluteYVelocity = Mathf.Abs(this._body.velocity.y); //This may be useful later once movement, throwing, and jumping are all finished
-        this.AbsoluteZVelocity = Mathf.Abs(this._body.velocity.z); //This may be useful later once movement, throwing, and jumping are all finished
+        if(_body != null)
+        {
+            this.AbsoluteXVelocity = Mathf.Abs(this._body.velocity.x); //This may be useful later once movement, throwing, and jumping are all finished
+            this.AbsoluteYVelocity = Mathf.Abs(this._body.velocity.y); //This may be useful later once movement, throwing, and jumping are all finished
+            this.AbsoluteZVelocity = Mathf.Abs(this._body.velocity.z); //This may be useful later once movement, throwing, and jumping are all finished
+        }
     }
 
     public void SetButtonValue(Buttons key, bool isPressed, float value)

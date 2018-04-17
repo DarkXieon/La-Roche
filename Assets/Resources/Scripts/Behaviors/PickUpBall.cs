@@ -6,21 +6,28 @@ public class PickUpBall : BaseBehavior
 {
     private PlayerHoldingState _holdingState;
 
-    protected override void Awake()
+    private PlayerFrozenState _frozenState;
+
+    public override void OnStartLocalPlayer()
     {
-        base.Awake();
+        base.OnStartLocalPlayer();
 
         _holdingState = this.GetComponent<PlayerHoldingState>();
+
+        _frozenState = this.GetComponent<PlayerFrozenState>();
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        var collidedWith = collision.gameObject;
-
-        //check if the collision was with the ball and make sure it wasn't thrown by another player if it was
-        if (collidedWith.tag == "Ball" && !collidedWith.GetComponent<BallThrownState>().WasThrown) 
+        if(isLocalPlayer && !_frozenState.IsFrozen)
         {
-            _holdingState.StartHoldingBall(collidedWith); //Pick up the ball
+            var collidedWith = collision.gameObject;
+
+            //check if the collision was with the ball and make sure it wasn't thrown by another player if it was
+            if (collidedWith.tag == "Ball" && !collidedWith.GetComponent<BallThrownState>().WasThrown)
+            {
+                _holdingState.StartHoldingBall(collidedWith); //Pick up the ball
+            }
         }
     }
 }
