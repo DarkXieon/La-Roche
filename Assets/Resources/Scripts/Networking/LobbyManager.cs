@@ -6,7 +6,6 @@ using UnityEngine.Networking.Types;
 using UnityEngine.Networking.Match;
 using System.Collections;
 
-
 namespace Prototype.NetworkLobby
 {
     public class LobbyManager : NetworkLobbyManager 
@@ -50,7 +49,7 @@ namespace Prototype.NetworkLobby
         
         protected ulong _currentMatchID;
         
-        void Start()
+        private void Start()
         {
             singleton = this;
             
@@ -62,6 +61,8 @@ namespace Prototype.NetworkLobby
             DontDestroyOnLoad(gameObject);
 
             SetServerInfo("Offline", "None");
+
+            showLobbyGUI = false;
         }
 
         public override void OnLobbyClientSceneChanged(NetworkConnection conn)
@@ -390,8 +391,7 @@ namespace Prototype.NetworkLobby
                 SetServerInfo("Client", networkAddress);
             }
         }
-
-
+        
         public override void OnClientDisconnect(NetworkConnection conn)
         {
             base.OnClientDisconnect(conn);

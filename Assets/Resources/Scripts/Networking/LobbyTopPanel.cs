@@ -13,8 +13,7 @@ public class LobbyTopPanel : MonoBehaviour
     {
         panelImage = GetComponent<Image>();
     }
-
-
+    
     void Update()
     {
         if (!isInGame)
@@ -24,7 +23,6 @@ public class LobbyTopPanel : MonoBehaviour
         {
             ToggleVisibility(!isDisplayed);
         }
-
     }
 
     public void ToggleVisibility(bool visible)
