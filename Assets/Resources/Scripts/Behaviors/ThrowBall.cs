@@ -13,8 +13,7 @@ public class ThrowBall : BaseBehavior
 
     [SerializeField]
     private float _maxPowerHoldTime = 1f;
-
-    //[SyncVar]
+    
     private PlayerHoldingState _holdingState;
 
     [SyncVar]
@@ -31,7 +30,6 @@ public class ThrowBall : BaseBehavior
     {
         if(isClient)
         {
-            //Debug.Log(_inputState.IsPressed(Buttons.THROW));
             if (_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall) //if the throw button is pressed and the player is holding the ball...
             {
                 Debug.Log(_currentHoldTime);
@@ -41,60 +39,27 @@ public class ThrowBall : BaseBehavior
             {
                 Debug.Log("It's working");
 
-                var ball = _holdingState.StopHoldingBall();//_holdingState.Ball;
+                var ball = _holdingState.StopHoldingBall();
+                var ballBody = ball.GetComponent<Rigidbody>();
 
-                var forceAxis = _holdingState.RotateXParent.forward; //the forward axis relative to the object's current rotation
-
+                var forceAxis = _holdingState.HoldingWith.forward; //the forward axis relative to the object's current rotation
                 var forceMultiplier = Mathf.Min(_currentHoldTime, _maxPowerHoldTime) / _maxPowerHoldTime; //this changes power based on hold time
-
                 var force = Mathf.Max(_maxThrowPower * forceMultiplier, _minThrowPower);
-
                 var forceOnAxis = forceAxis * force;
 
+                ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
+                CmdSetThrown(ball);
+
                 _currentHoldTime = 0f;
-
-                var throwMessage = new ThrowBallMessage
-                {
-                    Force = forceOnAxis
-                };
-
-                //LobbyManager.singleton.client.Send(MyMessageTypes.BallThrown, throwMessage);
-
-                NormalThrowBall(ball, forceOnAxis);
-                
-                //CmdThrowBall(ball, forceOnAxis);
-
-                //_holdingState.CmdStopHoldingBall(ball);
             }
         }
     }
-
-    [Command]
-    public void CmdThrowBall(GameObject ball, Vector3 force)
-    {
-        var ballBody = ball.GetComponent<Rigidbody>();
-
-        var ballState = ball.GetComponent<BallThrownState>();
-
-        ballBody.AddForce(force, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
-
-        ballState.WasThrown = true;
-    }
-
-    public void NormalThrowBall(GameObject ball, Vector3 force)
-    {
-        var ballBody = ball.GetComponent<Rigidbody>();
-
-        ballBody.AddForce(force, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
-
-        CmdSetThrown(ball);   
-    }
-
+    
     [Command]
     public void CmdSetThrown(GameObject ball)
     {
         var ballState = ball.GetComponent<BallThrownState>();
 
-        ballState.WasThrown = true;
+        ballState.BallThrownBy(this.gameObject);
     }
 }
