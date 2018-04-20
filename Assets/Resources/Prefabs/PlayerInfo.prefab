@@ -971,14 +971,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 155390}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 811523f8e578d6f4abb259f1fbaa5e0c, type: 3}
+  m_Script: {fileID: 11500000, guid: b8315b9802748254697fc8f719a613ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowLobbyGUI: 0
   colorButton: {fileID: 11488840}
   nameInput: {fileID: 11487112}
   readyButton: {fileID: 11413860}
-  waitingPlayerButton: {fileID: 11405868}
+  waitingPlayerButton: {fileID: 11440798}
   removePlayerButton: {fileID: 11443358}
   localIcone: {fileID: 153088}
   remoteIcone: {fileID: 189178}

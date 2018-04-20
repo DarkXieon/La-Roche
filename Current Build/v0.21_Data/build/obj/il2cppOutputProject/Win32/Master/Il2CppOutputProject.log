@@ -1,7 +1,0 @@
-﻿  Building GameAssembly.dll with MsvcWinRtToolChain.
-  	Output directory: C:\Users\Public\Documents\Unity Projects\La-Roche\Current Build\v0.21_Data\build\bin\Win32\Master
-  	Cache directory: C:\Users\Public\Documents\Unity Projects\La-Roche\Current Build\v0.21_Data\build\obj\il2cppOutputProject\Win32\Master
-  ObjectFiles: 570 of which compiled: 0
-  Total compilation time: 10551 milliseconds.
-  Encoding map file using command: C:\Users\Public\Documents\Unity Projects\La-Roche\Current Build\v0.21_Data\Il2CppOutputProject\IL2CPP\MapFileParser\MapFileParser.exe -format=MSVC "C:\Users\Public\Documents\Unity Projects\La-Roche\Current Build\v0.21_Data\build\bin\Win32\Master\GameAssembly.map" "C:\Users\Public\Documents\Unity Projects\La-Roche\Current Build\v0.21_Data\build\bin\Win32\Master\SymbolMap"
-  Cleaned up 2 object files.
