@@ -9,18 +9,31 @@ public class PlayerFrozenState : NetworkBehaviour
     [SerializeField] [SyncVar]
     private bool _isFrozen = false;
     
-    //[SyncVar]
-    private float? _timeLeft;
+    [SyncVar]
+    private float _timeLeft;
+
+    private PlayerConditionState _playerCondition;
+
+    private void Start()
+    {
+        _playerCondition = GetComponent<PlayerConditionState>();
+    }
 
     private void Update()
     {
-        if(_timeLeft != null)
+        if(isLocalPlayer && _playerCondition.IsOut && !_isFrozen)
         {
-            if(_timeLeft.Value > 0)
+            Debug.Log("Is out and frozen");
+
+            _isFrozen = true;
+        }
+        else if(isLocalPlayer && _isFrozen)
+        {
+            if(_timeLeft > 0)
             {
                 _timeLeft -= Time.deltaTime;
             }
-            else
+            else if(!_playerCondition.IsOut)
             {
                 UnFreeze();
             }
@@ -30,29 +43,28 @@ public class PlayerFrozenState : NetworkBehaviour
     public void UnFreeze()
     {
         _isFrozen = false;
-
-        _timeLeft = null;
     }
-
+    /*
     public void Freeze()
     {
         InternalFreeze(null);
     }
-
+    */
     public void FreezeOnTimer(float time)
     {
         InternalFreeze(time);
     }
 
-    private void InternalFreeze(float? time)
+    private void InternalFreeze(float time)
     {
+        /*
         if(IsFrozen && _timeLeft == null)
         {
             Debug.Log("Tried to freeze when already indefinatly frozen.");
 
             return;
         }
-        
+        */
         _timeLeft = time;
 
         _isFrozen = true;

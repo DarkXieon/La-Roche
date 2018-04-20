@@ -60,6 +60,6 @@ public class ThrowBall : BaseBehavior
     {
         var ballState = ball.GetComponent<BallThrownState>();
 
-        ballState.WasThrown = true;
+        ballState.BallThrownBy(this.gameObject);
     }
 }

@@ -31,7 +31,7 @@ public class PlayerHoldingState : NetworkBehaviour
     
     private void Update()
     {
-        Debug.Log(_timeLeft);
+        //Debug.Log(_timeLeft);
 
         if (isLocalPlayer && HoldingBall && _timeLeft > 0)
         {
@@ -124,7 +124,6 @@ public class PlayerHoldingState : NetworkBehaviour
     [Command]
     public void CmdStartHoldingBall(GameObject ball)
     {
-        
         var ballIdentity = ball.GetComponent<NetworkIdentity>();
 
         if(ballIdentity.clientAuthorityOwner != null)
