@@ -374,9 +374,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d35dd265d730864890d0af86bd7cb39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Ball: {fileID: 0}
-  RotateXParent: {fileID: 4874872590436636}
-  RotateYParent: {fileID: 4009829792265148}
+  _holdingBall: 0
+  _holdingWith: {fileID: 4874872590436636}
   _maxHoldTime: 15
   _verticalAutoTossVelocity: 10
   _horisontalAutoTossVelocity: 3

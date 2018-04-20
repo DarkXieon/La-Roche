@@ -26,7 +26,7 @@ public class AimBall : BaseBehavior
 
             if (isRequestingToAim /*&& _holdingState.HoldingBall*/) //for now, the camera and ball will be aimed the same way, so the ball shouldn't have to be held
             {
-                var aimingWith = _holdingState.RotateXParent; //The transform of the object used as a fulcrum
+                var aimingWith = _holdingState.HoldingWith; //The transform of the object used as a fulcrum
                 var aimingWithLocalRotation = aimingWith.localEulerAngles;
 
                 var tempMaxAimRotation = this.MaxAimRotation;

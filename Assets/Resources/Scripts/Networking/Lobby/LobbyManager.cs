@@ -330,6 +330,8 @@ namespace Prototype.NetworkLobby
         
         public override void OnLobbyServerPlayerRemoved(NetworkConnection conn, short playerControllerId)
         {
+            base.OnLobbyServerPlayerRemoved(conn, playerControllerId);
+
             for (int i = 0; i < lobbySlots.Length; ++i)
             {
                 LobbyPlayer p = lobbySlots[i] as LobbyPlayer;
@@ -344,6 +346,8 @@ namespace Prototype.NetworkLobby
 
         public override void OnLobbyServerDisconnect(NetworkConnection conn)
         {
+            base.OnLobbyServerDisconnect(conn);
+
             for (int i = 0; i < lobbySlots.Length; ++i)
             {
                 LobbyPlayer p = lobbySlots[i] as LobbyPlayer;

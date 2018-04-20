@@ -5,51 +5,41 @@ using Prototype.NetworkLobby;
 
 public class PlayerHoldingState : NetworkBehaviour
 {
-    public GameObject Ball;
+    public bool HoldingBall { get { return _holdingBall; } }
 
-    public bool HoldingBall; //Is the player holding the ball or not
-    
-    public Transform RotateXParent;
-    
-    public Transform RotateYParent;
-    
-    public NetworkConnection ClientConnection;
-    
-    [SerializeField]
-    private float _maxHoldTime = 15f;
+    public Transform HoldingWith { get { return _holdingWith; } }
+
+    private GameObject _ball;
+
+    [SyncVar]
+    public bool _holdingBall; //Is the player holding the ball or not
 
     [SyncVar]
     private float _timeLeft;
+
+    [SerializeField]
+    private Transform _holdingWith;
+    
+    [SerializeField]
+    private float _maxHoldTime = 15f;
 
     [SerializeField]
     private float _verticalAutoTossVelocity = 10f;
 
     [SerializeField]
     private float _horisontalAutoTossVelocity = 3f;
-
-
     
-    private void Start()
-    {
-        if (isServer)
-        {
-            //LobbyManager.singleton.client.RegisterHandler()
-
-            ClientConnection = LobbyManager.singleton.client.connection;
-
-            Debug.Log("Server Handler Created");
-        }
-    }
-
     private void Update()
     {
+        Debug.Log(_timeLeft);
+
         if (isLocalPlayer && HoldingBall && _timeLeft > 0)
         {
             _timeLeft -= Time.deltaTime;
         }
         else if (isLocalPlayer && HoldingBall && _timeLeft <= 0)
         {
-            var ball = Ball;
+            var ball = StopHoldingBall();
 
             var body = ball.GetComponent<Rigidbody>();
 
@@ -61,9 +51,9 @@ public class PlayerHoldingState : NetworkBehaviour
 
             var force = new Vector3(xVel, _verticalAutoTossVelocity, zVel);
 
-            body.AddForce(force, ForceMode.VelocityChange);
-
             var freeze = GetComponent<PlayerFrozenState>();
+            
+            body.AddForce(force, ForceMode.VelocityChange);
 
             freeze.FreezeOnTimer(5f);
         }
@@ -86,13 +76,13 @@ public class PlayerHoldingState : NetworkBehaviour
 
             ballBody.isKinematic = true; //We don't want gravity on the ball while we hold it
 
-            ball.transform.position = RotateXParent.position + RotateXParent.forward * 2; ; //sets the ball position
+            ball.transform.position = HoldingWith.position + HoldingWith.forward * 2; ; //sets the ball position
 
-            ball.transform.parent = RotateXParent.transform; //makes the ball a child to the ball container
+            ball.transform.parent = HoldingWith.transform; //makes the ball a child to the ball container
 
-            HoldingBall = true; //make sure we know for later we are holding it
+            _holdingBall = true; //make sure we know for later we are holding it
             
-            Ball = ball; //set it so it's no longer null
+            _ball = ball; //set it so it's no longer null
         }
         else
         {
@@ -104,12 +94,10 @@ public class PlayerHoldingState : NetworkBehaviour
     //The ball will simply just drop to the ground
     public GameObject StopHoldingBall()
     {
-        var ball = Ball; //make a reference so we can return it after we set the field to null
+        var ball = _ball; //make a reference so we can return it after we set the field to null
 
         if (ball != null)
         {
-            //CmdStopHoldingBall(ball);
-
             var ballBody = ball.GetComponent<Rigidbody>();
 
             //var negativeForce = ballBody.velocity * -1;
@@ -121,11 +109,9 @@ public class PlayerHoldingState : NetworkBehaviour
 
             ball.transform.parent = null;
 
-            HoldingBall = false;
+            _holdingBall = false;
 
-            Ball = null;
-
-            //CmdStopHoldingBall(ball);
+            _ball = null;
         }
         else
         {
@@ -147,11 +133,5 @@ public class PlayerHoldingState : NetworkBehaviour
         }
 
         ballIdentity.AssignClientAuthority(GetComponent<NetworkIdentity>().connectionToClient);
-    }
-
-    [Command]
-    public void CmdStopHoldingBall(GameObject ball)
-    {
-        ball.GetComponent<NetworkIdentity>().RemoveClientAuthority(GetComponent<NetworkIdentity>().connectionToClient);
     }
 }
