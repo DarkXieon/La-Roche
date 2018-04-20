@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Prototype.NetworkLobby;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class MovementController : BaseBehavior
 {
@@ -15,9 +17,9 @@ public class MovementController : BaseBehavior
     private PlayerHoldingState _holdingState;
     private PlayerFrozenState _frozenState;
     
-    public override void OnStartLocalPlayer()
+    protected override void Start()
     {
-        base.OnStartLocalPlayer();
+        base.Start();
 
         timeLeft = movementTimeLimit;   // Set the time that the user has to move to the movementTimeLimit
 
@@ -60,6 +62,7 @@ public class MovementController : BaseBehavior
                 //Debug.Log("Movement Time Left: " + timeLeft);    // Done for testing purposes
                 // Move the player
                 transform.Translate(moveSpeed * horizontalInput * Time.deltaTime, 0f, moveSpeed * verticalInput * Time.deltaTime); // Time.deltaTime normalizes the speed (due to differences like fps)
+                
             }   // If they run out of time...
             else if (timeLeft <= 0)
             {

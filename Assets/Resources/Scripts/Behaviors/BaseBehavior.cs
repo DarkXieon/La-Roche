@@ -8,10 +8,8 @@ public abstract class BaseBehavior : NetworkBehaviour
     protected InputState _inputState;
     protected Rigidbody _body;
 
-    public override void OnStartLocalPlayer()
+    protected virtual void Start()
     {
-        base.OnStartLocalPlayer();
-
         _inputState = GetComponent<InputState>();
         _body = GetComponent<Rigidbody>();
     }

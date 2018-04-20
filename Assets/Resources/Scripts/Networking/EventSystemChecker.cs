@@ -18,6 +18,8 @@ namespace Prototype.NetworkLobby
                 GameObject obj = new GameObject("EventSystem");
                 obj.AddComponent<EventSystem>();
                 obj.AddComponent<StandaloneInputModule>().forceModuleActive = true;
+
+                DontDestroyOnLoad(obj);
             }
         }
     }

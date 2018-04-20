@@ -17,13 +17,11 @@ public class InputState : NetworkBehaviour
     private Rigidbody _body;
     private Dictionary<Buttons, ButtonState> _buttonStates; //This will be used to track all of the button states
 
-    public override void OnStartLocalPlayer()
+    protected void OnEnable()
     {
         this._body = this.GetComponent<Rigidbody>();
 
         this._buttonStates = new Dictionary<Buttons, ButtonState>();
-
-        Cursor.lockState = CursorLockMode.Locked; //This locks the players cursor in the middle of the screen and makes it invisible
     }
 
     private void FixedUpdate()

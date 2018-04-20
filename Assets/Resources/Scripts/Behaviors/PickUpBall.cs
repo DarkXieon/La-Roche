@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class PickUpBall : BaseBehavior
 {
@@ -8,18 +9,18 @@ public class PickUpBall : BaseBehavior
 
     private PlayerFrozenState _frozenState;
 
-    public override void OnStartLocalPlayer()
+    protected override void Start()
     {
-        base.OnStartLocalPlayer();
+        base.Start();
 
         _holdingState = this.GetComponent<PlayerHoldingState>();
 
         _frozenState = this.GetComponent<PlayerFrozenState>();
     }
-
+    
     private void OnCollisionEnter(Collision collision)
     {
-        if(isLocalPlayer && !_frozenState.IsFrozen)
+        if (isLocalPlayer && !_frozenState.IsFrozen)
         {
             var collidedWith = collision.gameObject;
 

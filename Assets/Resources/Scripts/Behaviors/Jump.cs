@@ -14,9 +14,9 @@ public class Jump : BaseBehavior {
     public Vector3 gizmoPosition;
     public float radius;
   
-    public override void OnStartLocalPlayer()
+    protected override void Start()
     {
-        base.OnStartLocalPlayer();
+        base.Start();
 
         jump = new Vector3(0.0f, 2.0f, 0.0f); // set jump height value here
 

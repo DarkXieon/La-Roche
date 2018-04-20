@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class AimBall : BaseBehavior
 {
@@ -10,9 +8,9 @@ public class AimBall : BaseBehavior
 
     private PlayerHoldingState _holdingState;
 
-    public override void OnStartLocalPlayer()
+    protected override void Start()
     {
-        base.OnStartLocalPlayer();
+        base.Start();
 
         _holdingState = this.GetComponent<PlayerHoldingState>();
     }
@@ -28,27 +26,41 @@ public class AimBall : BaseBehavior
 
             if (isRequestingToAim /*&& _holdingState.HoldingBall*/) //for now, the camera and ball will be aimed the same way, so the ball shouldn't have to be held
             {
-                var aimingWith = _holdingState.HoldingIn; //The transform of the object used as a fulcrum
+                var aimingWith = _holdingState.RotateXParent; //The transform of the object used as a fulcrum
+                var aimingWithLocalRotation = aimingWith.localEulerAngles;
 
-                //For some reason, rotating _aiming with to a number like 30 rotates it down, and starting from 360 and counting down rotates it up
-                //These are work-arounds for that
-                var actualMaxAimRotation = 360 - this.MaxAimRotation;
-                var actualMinAimRotation = 360 - this.MinAimRotation;
+                var tempMaxAimRotation = this.MaxAimRotation;
+                var tempMinAimRotation = this.MinAimRotation;
 
-                var currentAimRotation = aimingWith.localRotation.eulerAngles.x < actualMaxAimRotation
-                    //If the rotation is less than the actual max aim rotation, that means unity turned our 360 to 0 since they are technacally equal, this fixes it
-                    ? new Vector3(360 - MinAimRotation, aimingWith.localRotation.eulerAngles.y, aimingWith.localRotation.eulerAngles.z)
-                    : aimingWith.localRotation.eulerAngles;
+                var tempLocalRotation = aimingWithLocalRotation.x < -180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
+                    ? aimingWithLocalRotation.x + 360
+                    : aimingWithLocalRotation.x;
 
+                tempLocalRotation = aimingWithLocalRotation.x > 180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
+                    ? aimingWithLocalRotation.x - 360
+                    : aimingWithLocalRotation.x;
+                
                 var rawAimRotation = isAimingUp //determines which button value to use
                     ? this._inputState.GetButtonValue(Buttons.AIM_UP)
                     : this._inputState.GetButtonValue(Buttons.AIM_DOWN);
 
-                var rotation = isAimingUp //calculates what we will be setting our rotation to
-                    ? Mathf.Max(currentAimRotation.x - rawAimRotation, actualMaxAimRotation)
-                    : Mathf.Min(currentAimRotation.x + rawAimRotation, actualMinAimRotation);
+                var rotation = isAimingUp //decreasing the rotation makes the player look up
+                    ? tempLocalRotation - rawAimRotation
+                    : tempLocalRotation + rawAimRotation;
+                
+                rotation = isAimingUp //the min and max are opposite of what feels natural
+                    ? Mathf.Max(rotation, tempMaxAimRotation * -1)
+                    : Mathf.Min(rotation, tempMinAimRotation * -1);
+                
+                rotation = rotation < -180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
+                    ? aimingWithLocalRotation.x + 360
+                    : rotation;
 
-                aimingWith.localRotation = Quaternion.Euler(rotation, currentAimRotation.y, currentAimRotation.z); //sets the rotation
+                rotation = rotation > 180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
+                    ? aimingWithLocalRotation.x - 360
+                    : rotation;
+                
+                aimingWith.localRotation = Quaternion.Euler(rotation, aimingWithLocalRotation.y, aimingWithLocalRotation.z); //sets the rotation
             }
         }
     }

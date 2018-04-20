@@ -11,7 +11,7 @@ public class InputManager : NetworkBehaviour
     [SerializeField]
     private InputState _inputState; //The input state that is to be managed
 
-    public override void OnStartLocalPlayer()
+    protected void Start()
     {
         foreach (var input in this._inputs)
         {

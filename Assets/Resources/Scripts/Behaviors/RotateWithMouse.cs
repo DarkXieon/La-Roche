@@ -1,15 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Prototype.NetworkLobby;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class RotateWithMouse : BaseBehavior
 {
+    private PlayerHoldingState _holdingState;
+
+    protected override void Start()
+    {
+        base.Start();
+
+        _holdingState = GetComponent<PlayerHoldingState>();
+    }
+
     private void Update()
     {
         if (isLocalPlayer)
         {
             var direction = this._inputState.RotationDirection;
-            Debug.Log(direction.ToString());
+            
             if (direction != HorisontalDirections.STATIONARY)
             {
                 var button = direction == HorisontalDirections.LEFT
@@ -20,7 +31,21 @@ public class RotateWithMouse : BaseBehavior
 
                 var rotationChange = rawRotationChange * (int)direction; //directional rotation change
 
-                this.transform.Rotate(transform.up, rotationChange); //change rotation
+                this.transform.Rotate(Vector3.up, rotationChange); //change rotation
+
+                //var ball = _holdingState.Ball;
+
+                if(_holdingState.HoldingBall)
+                {
+                    //var ballHeldState = ball.GetComponent<BallHeldState>();
+
+                    var rotateMessage = new RotateAngleMessage
+                    {
+                        Angle = rotationChange
+                    };
+
+                    //LobbyManager.singleton.client.Send(MyMessageTypes.RotateBallOnYAxis, rotateMessage);
+                }
             }
         }
     }

@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 
 public class BallThrownState : NetworkBehaviour
 {
+    [SyncVar]
     public bool WasThrown = false;
 
     private bool _updateNextFrame = false;
@@ -23,7 +24,7 @@ public class BallThrownState : NetworkBehaviour
     {
         var networkIdentity = GetComponent<NetworkIdentity>();
 
-        if(networkIdentity != null && isLocalPlayer)
+        if(networkIdentity != null && isServer)
         {
             var frozenState = collision.gameObject.GetComponent<PlayerFrozenState>();
 
