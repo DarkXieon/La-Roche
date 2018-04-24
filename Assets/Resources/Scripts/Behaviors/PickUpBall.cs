@@ -20,14 +20,17 @@ public class PickUpBall : BaseBehavior
     
     private void OnCollisionEnter(Collision collision)
     {
-        if (isLocalPlayer && !_frozenState.IsFrozen)
+        if(this.enabled)
         {
-            var collidedWith = collision.gameObject;
-
-            //check if the collision was with the ball and make sure it wasn't thrown by another player if it was
-            if (collidedWith.tag == "Ball" && !collidedWith.GetComponent<BallThrownState>().WasThrown)
+            if (isLocalPlayer && !_frozenState.IsFrozen)
             {
-                _holdingState.StartHoldingBall(collidedWith); //Pick up the ball
+                var collidedWith = collision.gameObject;
+
+                //check if the collision was with the ball and make sure it wasn't thrown by another player if it was
+                if (collidedWith.tag == "Ball" && !collidedWith.GetComponent<BallThrownState>().WasThrown)
+                {
+                    _holdingState.StartHoldingBall(collidedWith); //Pick up the ball
+                }
             }
         }
     }

@@ -23,6 +23,8 @@ public class Catching : BaseBehavior
 
     private PlayerHoldingState _holdingState;
 
+    private GameOverlay _gameOverlay;
+
     protected override void Start()
     {
         base.Start();
@@ -34,6 +36,8 @@ public class Catching : BaseBehavior
         chest = this.gameObject.transform.GetChild(chestNumber);
 
         _holdingState = GetComponent<PlayerHoldingState>();
+
+        _gameOverlay = GetComponent<GameOverlay>();
     }
 
     // Update is called once per frame
@@ -41,6 +45,15 @@ public class Catching : BaseBehavior
     {
         // This will cast rays only against colliders in layer 9 (the ball's layer)
         int layerMask = 1 << 9;
+        
+        var ray = camera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        bool canHit = Physics.Raycast(ray, catchDistance, layerMask);
+
+        var cursorColor = canHit
+            ? Color.green
+            : Color.red;
+
+        _gameOverlay.CursorColor = cursorColor;
 
         RaycastHit hit;
 

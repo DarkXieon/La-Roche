@@ -64,6 +64,8 @@ public class PlayerHoldingState : NetworkBehaviour
     {
         _timeLeft = _maxHoldTime;
 
+        GetComponent<GameOverlay>().ThrowPowerPercentage = 0f;
+
         if (ball.tag == "Ball") //The game ball should be the ONLY gameobject with that tag
         {
             CmdStartHoldingBall(ball);
