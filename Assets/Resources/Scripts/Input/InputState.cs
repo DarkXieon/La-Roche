@@ -58,7 +58,7 @@ public class InputState : NetworkBehaviour
 
         state.Value = value;
     }
-
+    
     public bool IsPressed(Buttons key)
     {
         ButtonState keyState;
@@ -76,7 +76,7 @@ public class InputState : NetworkBehaviour
             return false;
         }
     }
-
+    
     public float GetButtonValue(Buttons key)
     {
         ButtonState keyState;

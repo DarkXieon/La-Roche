@@ -9,5 +9,6 @@
     AIM_DOWN,
     THROW,
     JUMP,
-    BACK
+    BACK,
+    CATCH
 }

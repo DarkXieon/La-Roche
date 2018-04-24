@@ -6,18 +6,20 @@ using System.Linq;
 
 public class PlayerConditionState : NetworkBehaviour
 {
+    public GameObject[] PlayersEliminated { get { return _playersGottenOut.ToArray(); } }
+
     public bool IsOut { get { return _isOut; } }
 
-    private List<PlayerConditionState> _playersGottenOut;
+    private List<GameObject> _playersGottenOut;
 
     private PlayerStats _playerStats;
 
     [SyncVar]
     private bool _isOut = false;
-
+    
     private void Start()
     {
-        _playersGottenOut = new List<PlayerConditionState>();
+        _playersGottenOut = new List<GameObject>();
 
         _playerStats = GetComponent<PlayerStats>();
     }
@@ -28,7 +30,7 @@ public class PlayerConditionState : NetworkBehaviour
 
         _playerStats.AddOut();
 
-        _playersGottenOut.ForEach(player => player.GetIn());
+        //_playersGottenOut.ForEach(player => player.GetIn());
 
         _playersGottenOut.Clear();
     }
@@ -38,11 +40,15 @@ public class PlayerConditionState : NetworkBehaviour
         _isOut = false;
     }
 
-    public void GetPlayerOut(PlayerConditionState playerConditionState)
+    public void GetPlayerOut(GameObject player)
     {
-        playerConditionState.GetOut();
+        //var playerConditionState = player.GetComponent<PlayerConditionState>();
 
-        _playersGottenOut.Add(playerConditionState);
+        //Debug.Log(playerConditionState.name);
+
+        //playerConditionState.GetOut();
+
+        _playersGottenOut.Add(player);
 
         _playerStats.AddElimination();
     }

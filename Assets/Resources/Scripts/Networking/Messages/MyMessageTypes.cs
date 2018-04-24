@@ -5,5 +5,6 @@
     public const short BallMovedOnClient = 1005;
     public const short BallMovedOnServer = 1006;
     public const short BallThrown = 1007;
+    public const short PlayerConditionChanged = 1008;
 }
 
