@@ -19,11 +19,15 @@ public class ThrowBall : BaseBehavior
 
     private PlayerHoldingState _holdingState;
 
+    private GameOverlay _playerOverlay;
+
     protected override void Start()
     {
         base.Start();
 
         _holdingState = this.GetComponent<PlayerHoldingState>();
+
+        _playerOverlay = this.GetComponent<GameOverlay>();
     }
 
     private void Update()
@@ -34,6 +38,7 @@ public class ThrowBall : BaseBehavior
             {
                 Debug.Log(_currentHoldTime);
                 _currentHoldTime = _inputState.GetButtonHoldTime(Buttons.THROW);
+                _playerOverlay.ThrowPowerPercentage = Mathf.Max(Mathf.Min(_currentHoldTime, _maxPowerHoldTime) / _maxPowerHoldTime, _minThrowPower / _maxThrowPower);
             }
             else if (!_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall && _currentHoldTime > 0f) //if the throw button is not pressed, the player is holding the ball, and the player WAS holding the throw button
             {
@@ -50,6 +55,8 @@ public class ThrowBall : BaseBehavior
                 CmdSetThrown(ball);
 
                 _currentHoldTime = 0f;
+
+                //_playerOverlay.ThrowPowerPercentage = Mathf.Min(_minThrowPower / _maxThrowPower);
             }
         }
     }
