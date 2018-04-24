@@ -4,4 +4,10 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Resources/Scenes/Final Build Scenes/OpenScene.unity
+    guid: 70df8288a39e99c46883d2f09d72876d
+  - enabled: 1
+    path: Assets/Resources/Scenes/Final Build Scenes/MapScene.unity
+    guid: 870d810bb21b594449c5ddc80ebe37bf
