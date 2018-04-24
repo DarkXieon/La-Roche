@@ -13,10 +13,10 @@ public class PlayerStats : NetworkBehaviour
     
     public int PlayerNumber { get { return _playerNumber; } } // This is to identify each player seperately
 
-    [SyncVar]
+    //[SyncVar]
     private int _eliminations;
 
-    [SyncVar]
+    //[SyncVar]
     private int _outs;
 
     [SyncVar]
@@ -36,7 +36,9 @@ public class PlayerStats : NetworkBehaviour
 
     public void AddElimination()
     {
-        CmdAddElimination();
+        _eliminations++;
+
+        //CmdAddElimination();
     }
 
     [Command]
@@ -47,7 +49,9 @@ public class PlayerStats : NetworkBehaviour
 
     public void AddOut()
     {
-        CmdAddOut();
+        _outs++;
+
+        //CmdAddOut();
     }
 
     [Command]

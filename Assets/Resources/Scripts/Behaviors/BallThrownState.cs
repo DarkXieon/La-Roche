@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Prototype.NetworkLobby;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -18,7 +19,7 @@ public class BallThrownState : NetworkBehaviour
 
     private void Update()
     {
-        if(isServer && _updateNextFrame)
+        if(/*isServer && */_updateNextFrame)
         {
             _updateNextFrame = false;
 
@@ -32,51 +33,110 @@ public class BallThrownState : NetworkBehaviour
     {
         var networkIdentity = GetComponent<NetworkIdentity>();
 
-        if(networkIdentity != null && isServer)
+        if(/*isServer && */networkIdentity != null && collision.gameObject.tag == "Player")
         {
-            var conditionState = collision.gameObject.GetComponent<PlayerConditionState>();
-
-            if (WasThrown && collision.gameObject.tag == "Player")
-            {
-                if(conditionState != null)
-                {
-                    Debug.Log("time to freeze");
-                    
-                    _thrownBy.GetComponent<PlayerConditionState>().GetPlayerOut(conditionState);
-                }
-                else
-                {
-                    Debug.LogError("You forgot to add a PlayerConditionState script to the target player.");
-                }
-            }
-
-            _updateNextFrame = true;
+            BallCollidedWith(collision.gameObject);
         }
+        
+        _updateNextFrame = true;
     }
-    //So far this is all that this does--will likely do more in the future
 
-    public void BallThrownBy(GameObject player)
+    private void BallCollidedWith(GameObject player)
     {
-        if(!isServer)
+        if (WasThrown)
         {
-            CmdBallThrownBy(player);
-        }
-        else
-        {
-            ThrownByInternal(player);
+            var conditionState = player.GetComponent<PlayerConditionState>();
+
+            if (conditionState != null)// && _thrownBy != null)
+            {
+                Debug.Log("time to freeze");
+
+                CmdBallHit(player, _thrownBy);
+            }
+            else
+            {
+                Debug.LogError("You forgot to add a PlayerConditionState script to the target player.");
+            }
         }
     }
 
     [Command]
-    private void CmdBallThrownBy(GameObject player)
+    private void CmdBallHit(GameObject hit, GameObject thrownBy)
     {
-        ThrownByInternal(player);
+        var throwerCondition = thrownBy.GetComponent<PlayerConditionState>();
+        var hitCondition = hit.GetComponent<PlayerConditionState>();
+        var playersBackIn = hitCondition.PlayersEliminated;
+
+        throwerCondition.GetPlayerOut(hit);
+
+        foreach(GameObject player in playersBackIn)
+        {
+            var condition = player.GetComponent<PlayerConditionState>();
+
+            condition.GetIn();
+        }
+
+        hitCondition.GetOut();
     }
 
-    private void ThrownByInternal(GameObject player)
+    public void BallThrownBy(GameObject player)
     {
         _thrownBy = player;
 
         _wasThrown = true;
+    }
+
+    /*
+    public void BallCaughtBy(GameObject player)
+    {
+        if(WasThrown)
+        {
+            CmdBallCaught(player, _thrownBy);
+
+            _updateNextFrame = true;
+        }
+    }
+    */
+
+    public void BallCaughtBy(GameObject caughtBy)
+    {
+        if (_thrownBy != null)//WasThrown)
+        {
+            var throwerCondition = _thrownBy.GetComponent<PlayerConditionState>();
+            var caughtByCondition = caughtBy.GetComponent<PlayerConditionState>();
+            var playersBackIn = throwerCondition.PlayersEliminated;
+
+            caughtByCondition.GetPlayerOut(_thrownBy);
+
+            foreach (GameObject player in playersBackIn)
+            {
+                var condition = player.GetComponent<PlayerConditionState>();
+
+                condition.GetIn();
+            }
+
+            throwerCondition.GetOut();
+
+            _updateNextFrame = true;
+        }
+    }
+
+    [Command]
+    private void CmdBallCaught(GameObject caughtBy, GameObject thrownBy)
+    {
+        var throwerCondition = thrownBy.GetComponent<PlayerConditionState>();
+        var caughtByCondition = caughtBy.GetComponent<PlayerConditionState>();
+        var playersBackIn = throwerCondition.PlayersEliminated;
+
+        caughtByCondition.GetPlayerOut(thrownBy);
+
+        foreach (GameObject player in playersBackIn)
+        {
+            var condition = player.GetComponent<PlayerConditionState>();
+
+            condition.GetIn();
+        }
+
+        throwerCondition.GetOut();
     }
 }

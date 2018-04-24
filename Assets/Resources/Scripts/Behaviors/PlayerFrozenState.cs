@@ -21,6 +21,9 @@ public class PlayerFrozenState : NetworkBehaviour
 
     private void Update()
     {
+        //var condition = GetComponent<PlayerConditionState>();
+        //Debug.Log(condition.IsOut);
+
         if(isLocalPlayer && _playerCondition.IsOut && !_isFrozen)
         {
             Debug.Log("Is out and frozen");

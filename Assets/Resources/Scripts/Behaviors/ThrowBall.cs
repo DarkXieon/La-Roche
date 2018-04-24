@@ -14,11 +14,11 @@ public class ThrowBall : BaseBehavior
     [SerializeField]
     private float _maxPowerHoldTime = 1f;
     
-    private PlayerHoldingState _holdingState;
-
     [SyncVar]
     private float _currentHoldTime;
-    
+
+    private PlayerHoldingState _holdingState;
+
     protected override void Start()
     {
         base.Start();
@@ -28,7 +28,7 @@ public class ThrowBall : BaseBehavior
 
     private void Update()
     {
-        if(isClient)
+        if(isLocalPlayer)//isClient)
         {
             if (_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall) //if the throw button is pressed and the player is holding the ball...
             {
@@ -37,8 +37,6 @@ public class ThrowBall : BaseBehavior
             }
             else if (!_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall && _currentHoldTime > 0f) //if the throw button is not pressed, the player is holding the ball, and the player WAS holding the throw button
             {
-                Debug.Log("It's working");
-
                 var ball = _holdingState.StopHoldingBall();
                 var ballBody = ball.GetComponent<Rigidbody>();
 
@@ -48,6 +46,7 @@ public class ThrowBall : BaseBehavior
                 var forceOnAxis = forceAxis * force;
 
                 ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
+                //CmdSetThrown(ball);
                 CmdSetThrown(ball);
 
                 _currentHoldTime = 0f;
@@ -57,6 +56,13 @@ public class ThrowBall : BaseBehavior
     
     [Command]
     public void CmdSetThrown(GameObject ball)
+    {
+        var ballState = ball.GetComponent<BallThrownState>();
+
+        ballState.BallThrownBy(this.gameObject);
+    }
+
+    public void SetThrown(GameObject ball)
     {
         var ballState = ball.GetComponent<BallThrownState>();
 
