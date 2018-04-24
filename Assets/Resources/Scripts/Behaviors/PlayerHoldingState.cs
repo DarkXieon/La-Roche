@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.Networking;
 using Prototype.NetworkLobby;
+using System.Linq;
 
 public class PlayerHoldingState : NetworkBehaviour
 {
@@ -68,6 +69,7 @@ public class PlayerHoldingState : NetworkBehaviour
             CmdStartHoldingBall(ball);
 
             var ballBody = ball.GetComponent<Rigidbody>();
+            var ballCatchCollider = ball.GetComponents<SphereCollider>().First(collider => collider.isTrigger);
 
             //This is used to reset the velcity to zero. It's good to not get into the habit of directly modifying the velocity field
             var negativeForce = ballBody.velocity * -1;
@@ -79,6 +81,8 @@ public class PlayerHoldingState : NetworkBehaviour
             ball.transform.position = HoldingWith.position + HoldingWith.forward * 2; ; //sets the ball position
 
             ball.transform.parent = HoldingWith.transform; //makes the ball a child to the ball container
+
+            ballCatchCollider.enabled = false;
 
             _holdingBall = true; //make sure we know for later we are holding it
             
@@ -99,6 +103,7 @@ public class PlayerHoldingState : NetworkBehaviour
         if (ball != null)
         {
             var ballBody = ball.GetComponent<Rigidbody>();
+            var ballCatchCollider = ball.GetComponents<SphereCollider>().First(collider => collider.isTrigger);
 
             //var negativeForce = ballBody.velocity * -1;
 
@@ -108,6 +113,8 @@ public class PlayerHoldingState : NetworkBehaviour
             ballBody.isKinematic = false; //make gravity affect it again
 
             ball.transform.parent = null;
+
+            ballCatchCollider.enabled = true;
 
             _holdingBall = false;
 
