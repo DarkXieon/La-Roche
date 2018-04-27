@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Prototype.NetworkLobby;
-using UnityEngine;
-using UnityEngine.Networking;
+﻿using UnityEngine;
 
 public class RotateWithMouse : BaseBehavior
 {
@@ -38,12 +34,12 @@ public class RotateWithMouse : BaseBehavior
                 if(_holdingState.HoldingBall)
                 {
                     //var ballHeldState = ball.GetComponent<BallHeldState>();
-
+                    /*
                     var rotateMessage = new RotateAngleMessage
                     {
                         Angle = rotationChange
                     };
-
+                    */
                     //LobbyManager.singleton.client.Send(MyMessageTypes.RotateBallOnYAxis, rotateMessage);
                 }
             }

@@ -10,7 +10,7 @@ public class GizmosTest : MonoBehaviour
 
 	private void Update ()
     {
-        bool found = Physics.CheckSphere(this.transform.position + test, radius, CollisionLayer);
+        /*bool found = */Physics.CheckSphere(this.transform.position + test, radius, CollisionLayer);
 
         //Debug.Log(found);
 	}

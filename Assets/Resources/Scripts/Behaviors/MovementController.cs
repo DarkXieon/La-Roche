@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Prototype.NetworkLobby;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 public class MovementController : BaseBehavior
@@ -16,7 +13,8 @@ public class MovementController : BaseBehavior
 
     private PlayerHoldingState _holdingState;
     private PlayerFrozenState _frozenState;
-    
+    private GameOverlay _gameOverlay;
+
     protected override void Start()
     {
         base.Start();
@@ -24,8 +22,10 @@ public class MovementController : BaseBehavior
         timeLeft = movementTimeLimit;   // Set the time that the user has to move to the movementTimeLimit
 
         _holdingState = GetComponent<PlayerHoldingState>();
-
         _frozenState = GetComponent<PlayerFrozenState>();
+        _gameOverlay = GetComponent<GameOverlay>();
+
+        _holdingState.MaxRunWithBallTime = movementTimeLimit;
     }
 
     // For each frame...
@@ -54,11 +54,15 @@ public class MovementController : BaseBehavior
             }
 
             // If it's the user's turn, they're not out, and they still have time
-            if ((isUsersTurn && !isPlayerOut && timeLeft > 0 && !_frozenState.IsFrozen)/* || !_holdingState.HoldingBall*/)
+            if (isUsersTurn && !isPlayerOut && timeLeft > 0 && !_frozenState.IsFrozen)
             {
-                if (isUsersTurn && !isPlayerOut && timeLeft > 0)
+                if (_holdingState.HoldingBall)
+                {
                     // Decrease the time
                     timeLeft -= Time.deltaTime;
+
+                    CmdSetOverlayMessage(string.Format("You have {0} more seconds to move with the ball.", Mathf.RoundToInt(timeLeft)));
+                }
                 //Debug.Log("Movement Time Left: " + timeLeft);    // Done for testing purposes
                 // Move the player
                 transform.Translate(moveSpeed * horizontalInput * Time.deltaTime, 0f, moveSpeed * verticalInput * Time.deltaTime); // Time.deltaTime normalizes the speed (due to differences like fps)
@@ -76,5 +80,11 @@ public class MovementController : BaseBehavior
                 timeLeft = movementTimeLimit;   // Set the timeLeft back to movementTimeLimit, so when it's their turn again they have time to do something
             }
         }
+    }
+
+    [Command]
+    private void CmdSetOverlayMessage(string message)
+    {
+        _gameOverlay.CurrentMessage = message;
     }
 }

@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Prototype.NetworkLobby;
+
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -11,16 +11,13 @@ public class Catching : BaseBehavior
 
     // Max distance a player can be from the ball to catch it
     public float catchDistance;
+
     // Set to true if the ball is within the ball sphere collider
     private bool catchable = false;
-    //GameObject ball;
-    // Will be used to set ball to be child of the player's chest
-    private Transform chest;
+    
     // Will be used for raycasting
-    public Camera camera;
-    // Should be set to the child number chest is
-    public int chestNumber;
-
+    public Camera Camera;
+    
     private PlayerHoldingState _holdingState;
 
     private GameOverlay _gameOverlay;
@@ -28,13 +25,7 @@ public class Catching : BaseBehavior
     protected override void Start()
     {
         base.Start();
-
-        // Get the ball gameobject (Will be set to Find(Ball) eventually)
-        //ball = GameObject.Find("Test Ball");
-
-        // Needed to make ball a child of the player's chest object. If
-        chest = this.gameObject.transform.GetChild(chestNumber);
-
+        
         _holdingState = GetComponent<PlayerHoldingState>();
 
         _gameOverlay = GetComponent<GameOverlay>();
@@ -43,18 +34,28 @@ public class Catching : BaseBehavior
     // Update is called once per frame
     private void Update()
     {
+        var camera = Camera;
+
         // This will cast rays only against colliders in layer 9 (the ball's layer)
         int layerMask = 1 << 9;
+
+        if (isLocalPlayer)
+        {
+            //var ray = camera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+            //bool canHit = Physics.Raycast(ray, catchDistance, layerMask);
+            bool canHit = Physics.Raycast(camera.transform.position, camera.transform.forward, catchDistance, layerMask);
+            
+            var cursorColor = canHit
+                ? Color.green
+                : Color.red;
+
+            CmdSetCursorColor(/*gameObject, */cursorColor);
+        }
+        //var camera = Camera;
+
+        // This will cast rays only against colliders in layer 9 (the ball's layer)
+        //int layerMask = 1 << 9;
         
-        var ray = camera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-        bool canHit = Physics.Raycast(ray, catchDistance, layerMask);
-
-        var cursorColor = canHit
-            ? Color.green
-            : Color.red;
-
-        _gameOverlay.CursorColor = cursorColor;
-
         RaycastHit hit;
 
         // If the ball is catchable...
@@ -69,36 +70,44 @@ public class Catching : BaseBehavior
 
                 if (caught)
                 {
+                    var ballCaughtMessage = new BallCaughtMessage
+                    {
+                        BallId = hit.transform.gameObject.GetComponent<NetworkIdentity>().netId,
+                        CaughtById = GetComponent<NetworkIdentity>().netId
+                    };
+
+                    LobbyManager.singleton.client.Send(MyMessageTypes.BallCaughtMessage, ballCaughtMessage);
+
+                    _holdingState.StartHoldingBall(hit.transform.gameObject);
+                    /*
                     // Display that the ball was caught
                     Debug.Log("Caught");
                     Debug.Log(caught);
-
-
+                    
                     CmdCatchBall(this.gameObject, hit.transform.gameObject);
 
                     // Set the ball to be a child of the player
                     _holdingState.StartHoldingBall(hit.transform.gameObject);
-
-
-                    //Tell the ball it hit something
-                    //hit.transform.gameObject.GetComponent<BallThrownState>().BallCaughtBy(this.gameObject);
-
-                    //hit.transform.parent = chest.transform;
-                    //ball.transform.parent = chest.transform;
-
+                    
                     // Set the ball to uncatchable 
                     catchable = false;
+                    */
                 }
             }
         }
     }
 
     [Command]
+    private void CmdSetCursorColor(/*GameObject player, */Color color)
+    {
+        _gameOverlay.CursorColor = color;
+        //player.GetComponent<GameOverlay>().CursorColor = color;
+    }
+
+    [Command]
     private void CmdCatchBall(GameObject caughtBy, GameObject ball)
     {
         ball.GetComponent<BallThrownState>().BallCaughtBy(caughtBy);
-
-        //caughtBy.GetComponent<PlayerHoldingState>().StartHoldingBall(ball);
     }
 
     private void OnTriggerEnter(Collider other)
