@@ -14,13 +14,6 @@ public class LobbyMainMenu : MonoBehaviour
 {
     public RectTransform lobbyPanel;
     
-    private bool _loaded = false;
-    
-    public void OnEnable()
-    {
-        //LobbyManager.singleton.topPanel.ToggleVisibility(true);
-    }
-    
     public void OnClickStartMatch()
     {
         RequestJoinMatch();

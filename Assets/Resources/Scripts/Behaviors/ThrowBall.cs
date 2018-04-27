@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.Networking;
-using Prototype.NetworkLobby;
 
 public class ThrowBall : BaseBehavior
 {
@@ -32,13 +30,18 @@ public class ThrowBall : BaseBehavior
 
     private void Update()
     {
-        if(isLocalPlayer)//isClient)
+        var time = Time.time;
+        bool _isServer = isServer;
+        bool _isClient = isClient;
+        bool _isLocalPlayer = isLocalPlayer;
+
+        if(isLocalPlayer)
         {
             if (_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall) //if the throw button is pressed and the player is holding the ball...
             {
                 Debug.Log(_currentHoldTime);
                 _currentHoldTime = _inputState.GetButtonHoldTime(Buttons.THROW);
-                _playerOverlay.ThrowPowerPercentage = Mathf.Max(Mathf.Min(_currentHoldTime, _maxPowerHoldTime) / _maxPowerHoldTime, _minThrowPower / _maxThrowPower);
+                CmdSetPowerOverlay(Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f));
             }
             else if (!_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall && _currentHoldTime > 0f) //if the throw button is not pressed, the player is holding the ball, and the player WAS holding the throw button
             {
@@ -46,17 +49,15 @@ public class ThrowBall : BaseBehavior
                 var ballBody = ball.GetComponent<Rigidbody>();
 
                 var forceAxis = _holdingState.HoldingWith.forward; //the forward axis relative to the object's current rotation
-                var forceMultiplier = Mathf.Min(_currentHoldTime, _maxPowerHoldTime) / _maxPowerHoldTime; //this changes power based on hold time
-                var force = Mathf.Max(_maxThrowPower * forceMultiplier, _minThrowPower);
+                var forceMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f);//Mathf.Min(_currentHoldTime, _maxPowerHoldTime) / _maxPowerHoldTime; //this changes power based on hold time
+                var force = forceMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;//Mathf.Max(_maxThrowPower * forceMultiplier, _minThrowPower);
                 var forceOnAxis = forceAxis * force;
 
                 ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
-                //CmdSetThrown(ball);
+                
                 CmdSetThrown(ball);
 
                 _currentHoldTime = 0f;
-
-                //_playerOverlay.ThrowPowerPercentage = Mathf.Min(_minThrowPower / _maxThrowPower);
             }
         }
     }
@@ -69,10 +70,9 @@ public class ThrowBall : BaseBehavior
         ballState.BallThrownBy(this.gameObject);
     }
 
-    public void SetThrown(GameObject ball)
+    [Command]
+    private void CmdSetPowerOverlay(float percentage)
     {
-        var ballState = ball.GetComponent<BallThrownState>();
-
-        ballState.BallThrownBy(this.gameObject);
+        _playerOverlay.ThrowPowerPercentage = percentage;
     }
 }

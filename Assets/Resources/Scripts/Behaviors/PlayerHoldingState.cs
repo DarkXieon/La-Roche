@@ -1,14 +1,15 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Linq;
+
+using UnityEngine;
 using UnityEngine.Networking;
-using Prototype.NetworkLobby;
-using System.Linq;
 
 public class PlayerHoldingState : NetworkBehaviour
 {
     public bool HoldingBall { get { return _holdingBall; } }
 
     public Transform HoldingWith { get { return _holdingWith; } }
+
+    public float MaxRunWithBallTime;
 
     private GameObject _ball;
 
@@ -18,7 +19,7 @@ public class PlayerHoldingState : NetworkBehaviour
     [SyncVar]
     private float _timeLeft;
 
-    [SerializeField]
+    //[SerializeField] //[SyncVar]
     private Transform _holdingWith;
     
     [SerializeField]
@@ -29,34 +30,49 @@ public class PlayerHoldingState : NetworkBehaviour
 
     [SerializeField]
     private float _horisontalAutoTossVelocity = 3f;
-    
+
+    private GameOverlay _gameOverlay;
+
+    private void Start()
+    {
+        _gameOverlay = GetComponent<GameOverlay>();
+
+        _holdingWith = transform.Find("Chest");
+    }
+
     private void Update()
     {
-        //Debug.Log(_timeLeft);
-
-        if (isLocalPlayer && HoldingBall && _timeLeft > 0)
+        if(isLocalPlayer && HoldingBall)
         {
-            _timeLeft -= Time.deltaTime;
-        }
-        else if (isLocalPlayer && HoldingBall && _timeLeft <= 0)
-        {
-            var ball = StopHoldingBall();
+            if (_timeLeft > 0)
+            {
+                _timeLeft -= Time.deltaTime;
 
-            var body = ball.GetComponent<Rigidbody>();
+                if (_timeLeft <= _maxHoldTime - MaxRunWithBallTime)
+                {
+                    CmdSetOverlayMessage(string.Format("You have {0} more seconds to throw the ball.", Mathf.RoundToInt(_timeLeft)));
+                }
+            }
+            else
+            {
+                var ball = StopHoldingBall();
 
-            var randomGenerator = new System.Random();
+                var body = ball.GetComponent<Rigidbody>();
 
-            var xVel = randomGenerator.Next(-1, 1) * _horisontalAutoTossVelocity;
+                var randomGenerator = new System.Random();
 
-            var zVel = randomGenerator.Next(-1, 1) * _horisontalAutoTossVelocity;
+                var xVel = randomGenerator.Next(-1, 1) * _horisontalAutoTossVelocity;
 
-            var force = new Vector3(xVel, _verticalAutoTossVelocity, zVel);
+                var zVel = randomGenerator.Next(-1, 1) * _horisontalAutoTossVelocity;
 
-            var freeze = GetComponent<PlayerFrozenState>();
-            
-            body.AddForce(force, ForceMode.VelocityChange);
+                var force = new Vector3(xVel, _verticalAutoTossVelocity, zVel);
 
-            freeze.FreezeOnTimer(5f);
+                var freeze = GetComponent<PlayerFrozenState>();
+
+                body.AddForce(force, ForceMode.VelocityChange);
+
+                freeze.FreezeOnTimer(5f);
+            }
         }
     }
 
@@ -121,6 +137,8 @@ public class PlayerHoldingState : NetworkBehaviour
             _holdingBall = false;
 
             _ball = null;
+
+            CmdSetOverlayMessage("");
         }
         else
         {
@@ -131,7 +149,7 @@ public class PlayerHoldingState : NetworkBehaviour
     }
 
     [Command]
-    public void CmdStartHoldingBall(GameObject ball)
+    private void CmdStartHoldingBall(GameObject ball)
     {
         var ballIdentity = ball.GetComponent<NetworkIdentity>();
 
@@ -141,5 +159,11 @@ public class PlayerHoldingState : NetworkBehaviour
         }
 
         ballIdentity.AssignClientAuthority(GetComponent<NetworkIdentity>().connectionToClient);
+    }
+
+    [Command]
+    private void CmdSetOverlayMessage(string message)
+    {
+        _gameOverlay.CurrentMessage = message;
     }
 }

@@ -19,12 +19,12 @@ public class MeshCombiner : MonoBehaviour
             Debug.Log(meshFilters.Length);
             combine[i].mesh = meshFilters[i].sharedMesh;
             combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
-            meshFilters[i].gameObject.active = false;
+            meshFilters[i].gameObject.SetActive(false);
             i++;
         }
         transform.GetComponent<MeshFilter>().mesh = new Mesh();
         transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine, false, true, false);
-        transform.gameObject.active = true;
+        transform.gameObject.SetActive(true);
     }
 
     private MeshFilter[] GetAllMeshes(Transform transform)

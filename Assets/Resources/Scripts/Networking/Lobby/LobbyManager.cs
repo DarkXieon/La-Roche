@@ -1,10 +1,14 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using UnityEngine.Networking;
-using UnityEngine.Networking.Types;
-using UnityEngine.Networking.Match;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.Networking.Match;
+using UnityEngine.Networking.Types;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace Prototype.NetworkLobby
 {
@@ -31,6 +35,8 @@ namespace Prototype.NetworkLobby
         public GameObject addPlayerButton;
 
         protected RectTransform currentPanel;
+
+        protected int _gamePlayers;
 
         //public Button backButton;
 
@@ -64,6 +70,8 @@ namespace Prototype.NetworkLobby
             //SetServerInfo("Offline", "None");
 
             showLobbyGUI = false;
+
+            _gamePlayers = 0;
         }
 
         public override void OnLobbyClientSceneChanged(NetworkConnection conn)
@@ -136,15 +144,39 @@ namespace Prototype.NetworkLobby
             if (sceneName == this.playScene)
             {
                 GameObject spawned = Instantiate(spawnPrefabs[0], new Vector3(0, 3, 0), Quaternion.identity);
-
                 NetworkServer.Spawn(spawned);
+                
+                StartCoroutine(WaitForPlayersToJoin(() =>
+                {
+                    GameObject toSpawn = Instantiate(spawnPrefabs[1]);
+                    NetworkServer.Spawn(toSpawn);
+
+                    GameObject toSpawn2 = Instantiate(spawnPrefabs[2]);
+                    NetworkServer.Spawn(toSpawn2);
+                }));
             }
             else if(sceneName == this.lobbyScene)
             {
                 inGameMenu.SetVisibility(false);
 
                 Cursor.lockState = CursorLockMode.None;
+
+                Cursor.visible = true;
             }
+        }
+
+        private IEnumerator WaitForPlayersToJoin(Action todo)
+        {
+            var lobbyPlayerCount = lobbySlots
+                .Where(slot => slot != null)
+                .Count();
+            
+            while (lobbyPlayerCount > _gamePlayers)
+            {
+                yield return null;
+            }
+
+            todo.Invoke();
         }
 
         public void ChangeTo(RectTransform newPanel)
@@ -303,6 +335,23 @@ namespace Prototype.NetworkLobby
         }
 
         // ----------------- Server callbacks ------------------
+
+        public override bool OnLobbyServerSceneLoadedForPlayer(GameObject lobbyPlayer, GameObject gamePlayer)
+        {
+            base.OnLobbyServerSceneLoadedForPlayer(lobbyPlayer, gamePlayer);
+
+            var stats = gamePlayer.GetComponent<PlayerStats>();
+
+            var lobbyPlayerComponent = lobbyPlayer.GetComponent<LobbyPlayer>();
+            
+            stats.PlayerName = lobbyPlayerComponent.nameInput.text;
+
+            stats.PlayerColor = lobbyPlayerComponent.playerColor;
+
+            _gamePlayers++;
+            
+            return true;
+        }
 
         //we want to disable the button JOIN if we don't have enough player
         //But OnLobbyClientConnect isn't called on hosting player. So we override the lobbyPlayer creation

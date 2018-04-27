@@ -1,44 +1,64 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Prototype.NetworkLobby;
+﻿using Prototype.NetworkLobby;
+
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class BallThrownState : NetworkBehaviour
 {
-    public bool WasThrown { get { return _wasThrown; } }
+    //public GameObject ThrownBy { get { return ThrownBy; } }
 
     [SyncVar]
-    private bool _wasThrown = false;
+    public bool WasThrown;
+    
+    //private bool _wasThrown = false;
 
     [SyncVar]
-    private GameObject _thrownBy;
+    public GameObject ThrownBy;
 
     [SyncVar]
     private bool _updateNextFrame = false;
 
     private void Update()
     {
-        if(/*isServer && */_updateNextFrame)
+        if(_updateNextFrame)
         {
             _updateNextFrame = false;
 
-            _wasThrown = false;
+            WasThrown = false;
 
-            _thrownBy = null;
+            ThrownBy = null;
         }
     }
     
     private void OnCollisionEnter(Collision collision)
     {
-        var networkIdentity = GetComponent<NetworkIdentity>();
+        var ballNetworkId = GetComponent<NetworkIdentity>().netId;
 
-        if(/*isServer && */networkIdentity != null && collision.gameObject.tag == "Player")
+        var collidedWithNetworkIdentity = collision.gameObject.GetComponent<NetworkIdentity>();
+
+        bool collidedWithLocalObject = collidedWithNetworkIdentity == null;
+
+        var ballCollisionMessage = new BallCollisionMessage
+        {
+            BallId = ballNetworkId,
+            CollidedWithLocalObject = collidedWithLocalObject,
+            CollidedWithId = collidedWithLocalObject
+                ? default(NetworkInstanceId)
+                : collidedWithNetworkIdentity.netId
+        };
+        
+        LobbyManager.singleton.client.Send(MyMessageTypes.BallCollisionMessage, ballCollisionMessage);
+
+        /*
+        var networkIdentity = GetComponent<NetworkIdentity>();
+        
+        if(networkIdentity != null && collision.gameObject.tag == "Player")
         {
             BallCollidedWith(collision.gameObject);
         }
         
         _updateNextFrame = true;
+        */
     }
 
     private void BallCollidedWith(GameObject player)
@@ -51,7 +71,7 @@ public class BallThrownState : NetworkBehaviour
             {
                 Debug.Log("time to freeze");
 
-                CmdBallHit(player, _thrownBy);
+                CmdBallHit(player, ThrownBy);
             }
             else
             {
@@ -81,32 +101,20 @@ public class BallThrownState : NetworkBehaviour
 
     public void BallThrownBy(GameObject player)
     {
-        _thrownBy = player;
+        ThrownBy = player;
 
-        _wasThrown = true;
+        WasThrown = true;
     }
-
-    /*
-    public void BallCaughtBy(GameObject player)
-    {
-        if(WasThrown)
-        {
-            CmdBallCaught(player, _thrownBy);
-
-            _updateNextFrame = true;
-        }
-    }
-    */
 
     public void BallCaughtBy(GameObject caughtBy)
     {
-        if (_thrownBy != null)//WasThrown)
+        if (ThrownBy != null)//WasThrown)
         {
-            var throwerCondition = _thrownBy.GetComponent<PlayerConditionState>();
+            var throwerCondition = ThrownBy.GetComponent<PlayerConditionState>();
             var caughtByCondition = caughtBy.GetComponent<PlayerConditionState>();
             var playersBackIn = throwerCondition.PlayersEliminated;
 
-            caughtByCondition.GetPlayerOut(_thrownBy);
+            caughtByCondition.GetPlayerOut(ThrownBy);
 
             foreach (GameObject player in playersBackIn)
             {
