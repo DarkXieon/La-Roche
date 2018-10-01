@@ -19,7 +19,7 @@ public class Catching : BaseBehavior
     public Camera Camera;
     
     private PlayerHoldingState _holdingState;
-
+    private AnimationSwitcher _animationSwitcher;
     private GameOverlay _gameOverlay;
 
     protected override void Start()
@@ -27,7 +27,7 @@ public class Catching : BaseBehavior
         base.Start();
         
         _holdingState = GetComponent<PlayerHoldingState>();
-
+        _animationSwitcher = GetComponent<AnimationSwitcher>();
         _gameOverlay = GetComponent<GameOverlay>();
     }
 
@@ -44,7 +44,7 @@ public class Catching : BaseBehavior
             //var ray = camera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
             //bool canHit = Physics.Raycast(ray, catchDistance, layerMask);
             bool canHit = Physics.Raycast(camera.transform.position, camera.transform.forward, catchDistance, layerMask);
-            
+
             var cursorColor = canHit
                 ? Color.green
                 : Color.red;
@@ -57,7 +57,7 @@ public class Catching : BaseBehavior
         //int layerMask = 1 << 9;
         
         RaycastHit hit;
-
+        
         // If the ball is catchable...
         if (catchable == true)
         {
@@ -67,9 +67,11 @@ public class Catching : BaseBehavior
                 // Need to find a way to use camera instead of this.transform.position, maybe a drag-in-drop or public variable to be set
                 // Does the ray intersect any object in the ball layer
                 bool caught = Physics.Raycast(camera.transform.position, camera.transform.forward, out hit, catchDistance, layerMask);
-
+                
                 if (caught)
                 {
+                    CmdStartCatchAnimation();
+
                     var ballCaughtMessage = new BallCaughtMessage
                     {
                         BallId = hit.transform.gameObject.GetComponent<NetworkIdentity>().netId,
@@ -80,10 +82,6 @@ public class Catching : BaseBehavior
 
                     _holdingState.StartHoldingBall(hit.transform.gameObject);
                     /*
-                    // Display that the ball was caught
-                    Debug.Log("Caught");
-                    Debug.Log(caught);
-                    
                     CmdCatchBall(this.gameObject, hit.transform.gameObject);
 
                     // Set the ball to be a child of the player
@@ -96,24 +94,11 @@ public class Catching : BaseBehavior
             }
         }
     }
-
-    [Command]
-    private void CmdSetCursorColor(/*GameObject player, */Color color)
-    {
-        _gameOverlay.CursorColor = color;
-        //player.GetComponent<GameOverlay>().CursorColor = color;
-    }
-
-    [Command]
-    private void CmdCatchBall(GameObject caughtBy, GameObject ball)
-    {
-        ball.GetComponent<BallThrownState>().BallCaughtBy(caughtBy);
-    }
-
+    
     private void OnTriggerEnter(Collider other)
     {
         // If the player enters the ball collider, set catchable as true
-        if (other.tag == "Ball")
+        if (other.attachedRigidbody.tag == "Ball")
         {
             catchable = true;
         }
@@ -122,9 +107,21 @@ public class Catching : BaseBehavior
     private void OnTriggerExit(Collider other)
     {
         // If the player leaves the ball collider, set catchable as false
-        if (other.tag == "Ball")
+        if (other.attachedRigidbody.tag == "Ball")
         {
             catchable = false;
         }
+    }
+
+    [Command]
+    private void CmdSetCursorColor(Color color)
+    {
+        _gameOverlay.CursorColor = color;
+    }
+
+    [Command]
+    private void CmdStartCatchAnimation()
+    {
+        _animationSwitcher.CatchBall();
     }
 }

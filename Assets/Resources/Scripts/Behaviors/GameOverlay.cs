@@ -36,18 +36,25 @@ public class GameOverlay : NetworkBehaviour
     [SerializeField]
     private Image _cursor;
 
+    [SerializeField]
+    private Image _childCursor;
+
+    [SerializeField]
+    private Sprite _blueMonkey;
+
+    [SerializeField]
+    private Sprite _redMonkey;
+
     private void Awake()
     {
         if(isServer)
         {
             Debug.Log(isServer);
-            //if(isLocalPlayer)
-            //{
+            
             _nameText.text = "";
             _throwPowerText.text = "0% Power";
-            _cursor.color = Color.red;
-            //}
-
+            //_cursor.color = Color.red;
+            
             _matchTimeLeft = FindObjectsOfType<GameObject>()
                 .Single(obj => obj.tag == "WinConditionsManager")
                 .GetComponent<Text>();
@@ -111,6 +118,13 @@ public class GameOverlay : NetworkBehaviour
 
     private void OnCursorColorChange(Color color)
     {
-        _cursor.color = color;
+        if(color == Color.red)
+        {
+            _childCursor.sprite = _redMonkey;
+        }
+        else
+        {
+            _childCursor.sprite = _blueMonkey;
+        }
     }
 }

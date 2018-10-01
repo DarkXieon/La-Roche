@@ -1,65 +1,82 @@
 ﻿using System.Collections;
+using System.Linq;
 
 using UnityEngine;
 
+/// <summary>
+/// 
+/// </summary>
 public class GameTimer : WinningConditions
 {
-    public bool gameStarted = false;
+    [SerializeField]
+    private float _timeLeft;
 
-    public float timeLeft;
-    public bool stop;
+    private bool _stop;
+    private float _minutes;
+    private float _seconds;
 
-    private float minutes;
-    private float seconds;
+    private bool _initilized = false;
     
     protected void Awake()
     {
-        stop = false;
-		gameStarted = true;
-        
-        SetPlayersAndStats();
-        StartCoroutine(updateCoroutine());
+        StartCoroutine(this.WaitForCondition(
+            waitUntilTrue: gameTimer => FindObjectsOfType<GameObject>()
+                .Where(obj => obj.tag == "Player")
+                .All(player => player.GetComponent<PlayerStats>() != null),
+            whenConditionTrue: () =>
+            {
+                SetPlayersAndStats();
+                StartCoroutine(UpdateCoroutine());
+
+                _stop = false;
+                _initilized = true;
+            }));
     }
 
     public void Update()
     {
-        if (OnePlayerLeft())
+        if(_initilized)
         {
-            stop = true;
-        }
-        if (!stop)
-        {
-            SetTime();
-
-            if (minutes <= 0 && seconds <= 0)
+            if (OnePlayerLeft())
             {
-                stop = true;
-                minutes = 0;
-                seconds = 0;
+                _stop = true;
             }
-        }
-        if (stop)
-        {
-            GetBestPlayer();
+            if (!_stop)
+            {
+                SetTime();
+
+                if (_minutes <= 0 && _seconds <= 0)
+                {
+                    _stop = true;
+                    _minutes = 0;
+                    _seconds = 0;
+                }
+            }
+            if (_stop)
+            {
+                var winners = GetTopPlayers();
+
+                WinConditionMet(winners);
+            }
         }
     }
     
     private void SetTime()
     {
-        timeLeft -= Time.deltaTime;
-        minutes = Mathf.Floor(timeLeft / 60);
-        seconds = timeLeft % 60;
-        if (seconds > 59)
-            seconds = 59;
+        _timeLeft -= Time.deltaTime;
+        _minutes = Mathf.Floor(_timeLeft / 60);
+        _seconds = _timeLeft % 60;
+        if (_seconds > 59)
+            _seconds = 59;
     }
-
-    private IEnumerator updateCoroutine()
+    
+    private IEnumerator UpdateCoroutine()
     {
-        while(!stop)
+        while(!_stop)
         {
-            foreach(var overlay in overlays)
+            foreach(var overlay in _overlays)
             {
-                overlay.MatchTimeLeft = string.Format("{0:0}:{1:00}", minutes, seconds);
+                overlay.MatchTimeLeft = string.Format("{0:0}:{1:00}", _minutes, _seconds);
             }
             
             yield return new WaitForSeconds(0.2f);

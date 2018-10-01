@@ -9,10 +9,12 @@ public class MovementController : BaseBehavior
     public float moveSpeed = 10.0f; // The player's movement speed
 
     public bool isUsersTurn = true; // Set to true if it's the player's turn (they have the ball)
-    public bool isPlayerOut = false;    // Is set to true if the player gets out
+    public bool isPlayerOut = false; // Is set to true if the player gets out
 
     private PlayerHoldingState _holdingState;
     private PlayerFrozenState _frozenState;
+    private AnimationSwitcher _animationSwitcher;
+    private AudioController _audioController;
     private GameOverlay _gameOverlay;
 
     protected override void Start()
@@ -23,6 +25,8 @@ public class MovementController : BaseBehavior
 
         _holdingState = GetComponent<PlayerHoldingState>();
         _frozenState = GetComponent<PlayerFrozenState>();
+        _animationSwitcher = GetComponent<AnimationSwitcher>();
+        _audioController = GetComponent<AudioController>();
         _gameOverlay = GetComponent<GameOverlay>();
 
         _holdingState.MaxRunWithBallTime = movementTimeLimit;
@@ -35,7 +39,7 @@ public class MovementController : BaseBehavior
         {
             float horizontalInput = 0f;
             float verticalInput = 0f;
-
+            
             bool hasHorizontalInput = _inputState.IsPressed(Buttons.LEFT) || _inputState.IsPressed(Buttons.RIGHT);
             bool hasVerticalInput = _inputState.IsPressed(Buttons.FORWARD) || _inputState.IsPressed(Buttons.BACK);
 
@@ -49,12 +53,18 @@ public class MovementController : BaseBehavior
             if (hasVerticalInput)
             {
                 verticalInput = _inputState.IsPressed(Buttons.FORWARD)
-                    ? _inputState.GetButtonValue(Buttons.FORWARD)
-                    : _inputState.GetButtonValue(Buttons.BACK) * -1;
+                    ? _inputState.GetButtonValue(Buttons.FORWARD) * -1
+                    : _inputState.GetButtonValue(Buttons.BACK);
             }
 
+            bool canMove = isUsersTurn && !isPlayerOut && timeLeft > 0 && !_frozenState.IsFrozen;
+            bool hasMovementInput = hasHorizontalInput || hasVerticalInput;
+
+            //TODO: CHANGE THIS, I DON'T THINK THE COMMAND IS NEEDED ANYMORE
+            CmdSetAnimationStatus(hasVerticalInput && canMove);
+            
             // If it's the user's turn, they're not out, and they still have time
-            if (isUsersTurn && !isPlayerOut && timeLeft > 0 && !_frozenState.IsFrozen)
+            if (canMove)
             {
                 if (_holdingState.HoldingBall)
                 {
@@ -63,16 +73,32 @@ public class MovementController : BaseBehavior
 
                     CmdSetOverlayMessage(string.Format("You have {0} more seconds to move with the ball.", Mathf.RoundToInt(timeLeft)));
                 }
-                //Debug.Log("Movement Time Left: " + timeLeft);    // Done for testing purposes
-                // Move the player
-                transform.Translate(moveSpeed * horizontalInput * Time.deltaTime, 0f, moveSpeed * verticalInput * Time.deltaTime); // Time.deltaTime normalizes the speed (due to differences like fps)
-                
+                if(hasMovementInput)
+                {
+                    // Move the player
+                    // Time.deltaTime normalizes the speed (due to differences like fps)
+                    transform.Translate(moveSpeed * verticalInput * Time.deltaTime, 0f, moveSpeed * horizontalInput * Time.deltaTime);
+
+                    if(!_audioController.IsPlaying(AudioClips.PlayerRunLoop))
+                    {
+                        _audioController.PlayAudio(AudioClips.PlayerRunLoop, true);
+                    }
+                }
             }   // If they run out of time...
-            else if (timeLeft <= 0)
+            else
             {
-                // Set isUsersTurn to false
-                isUsersTurn = false;
+                if (timeLeft <= 0)
+                {
+                    // Set isUsersTurn to false
+                    isUsersTurn = false;
+                }
             }
+
+            if ((!canMove || !hasMovementInput) && _audioController.IsPlaying(AudioClips.PlayerRunLoop))
+            {
+                _audioController.StopAudio(AudioClips.PlayerRunLoop, true);
+            }
+
             if (!_holdingState.HoldingBall)
             {
                 isUsersTurn = true;
@@ -86,5 +112,18 @@ public class MovementController : BaseBehavior
     private void CmdSetOverlayMessage(string message)
     {
         _gameOverlay.CurrentMessage = message;
+    }
+
+    [Command]
+    private void CmdSetAnimationStatus(bool walking)
+    {
+        if(walking)
+        {
+            _animationSwitcher.StartWalking();
+        }
+        else
+        {
+            _animationSwitcher.StopWalking();
+        }
     }
 }

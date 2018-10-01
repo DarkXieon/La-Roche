@@ -1,89 +1,89 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
+
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.UI;
-using System.Linq;
 
 public class WinningConditions : NetworkBehaviour
 {
-    public PlayerStats[] stats;
-    public PlayerConditionState[] playerConditions;
-    public GameObject[] players;
-    private List<int> winnerIndexList; // the list of everyone with the highest score (only more than one item if a tie)
-    //private bool tie;
-    protected GameOverlay[] overlays;
+    protected GameObject[] _players;
+    protected PlayerConditionState[] _playerConditions;
+    protected PlayerStats[] _stats;
+    protected GameOverlay[] _overlays;
     
-    public void GetBestPlayer()
+    //private List<int> _winnerIndexList; // the list of everyone with the highest score (only more than one item if a tie)
+
+    protected GameObject[] GetTopPlayers()
     {
-        if (players.Length != 0)
+        var comparer = new PlayerStatsComparer();
+
+        var topPlayer = _stats
+            .OrderByDescending(stat => stat, comparer)
+            .First();
+
+        var winningPlayers = _stats
+            .Where(stat => comparer.Compare(topPlayer, stat) == 0)
+            .Select(stat => stat.gameObject)
+            .ToArray();
+
+        return winningPlayers;
+        
+        /*
+        int highEliminations = 0;  // Highest Elimination value
+        int lowOuts = 0; // Highest Out value
+        _winnerIndexList = new List<int>();
+            
+        foreach (var stat in _stats)
         {
-            int highEliminations = 0;  // Highest Elimination value
-            int lowOuts = 0; // Highest Out value
-            winnerIndexList = new List<int>();
-
-            foreach (var stat in this.stats)
+            if(stat.Eliminations > highEliminations || (stat.Eliminations == highEliminations && stat.Outs < lowOuts))
             {
-                //if (stat.Eliminations >= tempStat.Eliminations) // if the the current stat is greater than the temp, make a new high eliminations
-                if(stat.Eliminations > highEliminations || (stat.Eliminations == highEliminations && stat.Outs < lowOuts))
-                {
-                    highEliminations = stat.Eliminations;
-                    lowOuts = stat.Outs;
-                    Debug.Log("new high elimination");
-                }
-                //if (stat.Outs <= tempStat.Outs) // check if the current stat has a lower outs number
+                highEliminations = stat.Eliminations;
+                lowOuts = stat.Outs;
+                Debug.Log("new high elimination");
             }
-
-            for(int i = 0; i < stats.Length; i++) // Check for ties
-            {
-                var stat = stats[i];
-
-                if (stat.Eliminations == highEliminations && stat.Outs == lowOuts)
-                {
-                    winnerIndexList.Add(i); // add to list of players who tied
-                }
-            }
-            /*
-            if (winnerIndexList.Count == 1)
-            {
-                tie = false;
-            }
-            else
-                tie = true;
-            */
-            Debug.Log(lowOuts + " low outs  and " + highEliminations + " best eliminations"); // just a test of how many the best player got
-
-            var winningPlayers = winnerIndexList
-                .Select(index => players[index])
-                .ToArray();
-
-            WinConditionMet(winningPlayers);
         }
+
+        for(int i = 0; i < _stats.Length; i++) // Check for ties
+        {
+            var stat = _stats[i];
+
+            if (stat.Eliminations == highEliminations && stat.Outs == lowOuts)
+            {
+                _winnerIndexList.Add(i); // add to list of players who tied
+            }
+        }
+            
+        Debug.Log(lowOuts + " low outs  and " + highEliminations + " best eliminations"); // just a test of how many the best player got
+
+        var winningPlayers = _winnerIndexList
+            .Select(index => _players[index])
+            .ToArray();
+
+        WinConditionMet(winningPlayers);
+        */
     }
 
     protected void SetPlayersAndStats()
     {
-        players = FindObjectsOfType<GameObject>()
+        _players = FindObjectsOfType<GameObject>()
             .Where(obj => obj.tag == "Player")
             .ToArray();
-
-        players.ToList().ForEach(player => Debug.Log(player.GetComponent<PlayerStats>().PlayerName));
         
-        stats = new PlayerStats[players.Length];
-        playerConditions = new PlayerConditionState[players.Length];
-        overlays = new GameOverlay[players.Length];
+        _stats = new PlayerStats[_players.Length];
+        _playerConditions = new PlayerConditionState[_players.Length];
+        _overlays = new GameOverlay[_players.Length];
 
-        for (int i = 0; i < stats.Length; i++)
+        for (int i = 0; i < _stats.Length; i++)
         {
-            stats[i] = players[i].GetComponent<PlayerStats>(); // get each players stats
-            playerConditions[i] = players[i].GetComponent<PlayerConditionState>(); // get each players stats
-            overlays[i] = players[i].GetComponent<GameOverlay>();
+            _stats[i] = _players[i].GetComponent<PlayerStats>(); // get each players stats
+            _playerConditions[i] = _players[i].GetComponent<PlayerConditionState>(); // get each players stats
+            _overlays[i] = _players[i].GetComponent<GameOverlay>();
         }
     }
     
     protected bool OnePlayerLeft()
     {
-        int playersLeft = playerConditions
+        int playersLeft = _playerConditions
             .Where(player => !player.IsOut)
             .Count();
 
@@ -101,40 +101,50 @@ public class WinningConditions : NetworkBehaviour
                 Debug.Log(string.Format("Winner got out {0} times", winner.Outs));
             });
 
-        if(winners.Length == 1)
-        {
-            string overlayMessage = string.Format("{0} won the game!", winners[0].GetComponent<PlayerStats>().PlayerName);
+        string winnerNames = GetWinnerNames(winners);
 
-            foreach(GameOverlay overlay in overlays)
-            {
-                overlay.CurrentMessage = overlayMessage;
-            }
+        string overlayMessage = string.Format("{0} won the game!", winnerNames);
+
+        foreach(GameOverlay overlay in _overlays)
+        {
+            overlay.CurrentMessage = overlayMessage;
         }
-        else
+    }
+    
+    private string GetWinnerNames(GameObject[] winners)
+    {
+        string nameString = "";
+
+        for (int i = 0; i < winners.Length; i++)
         {
-            string nameString = "";
+            string playerName = winners[i].GetComponent<PlayerStats>().PlayerName;
 
-            for(int i = 0; i < overlays.Length; i++)
+            if (i == _overlays.Length - 2)
             {
-                string playerName = winners[i].GetComponent<PlayerStats>().PlayerName;
-
-                if (i == overlays.Length - 2)
-                {
-                    playerName += ", and ";
-                }
-                if(i < overlays.Length - 2)
-                {
-                    playerName += ", ";
-                }
-
-                nameString += playerName;
+                playerName += ", and ";
             }
-            
-            string overlayMessage = string.Format("{0} won the game!", nameString);
-
-            foreach (GameOverlay overlay in overlays)
+            if (i < _overlays.Length - 2)
             {
-                overlay.CurrentMessage = overlayMessage;
+                playerName += ", ";
+            }
+
+            nameString += playerName;
+        }
+
+        return nameString;
+    }
+
+    protected class PlayerStatsComparer : IComparer<PlayerStats>
+    {
+        public int Compare(PlayerStats x, PlayerStats y)
+        {
+            if(x.Eliminations.CompareTo(y.Eliminations) != 0)
+            {
+                return x.Eliminations.CompareTo(y.Eliminations);
+            }
+            else
+            {
+                return x.Outs.CompareTo(y.Outs);
             }
         }
     }
