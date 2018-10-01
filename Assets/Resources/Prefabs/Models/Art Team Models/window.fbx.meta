@@ -1,7 +1,5 @@
 fileFormatVersion: 2
 guid: da79bf64c1ff10a4188af674700ee762
-timeCreated: 1523731557
-licenseType: Free
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
@@ -19,6 +17,7 @@ ModelImporter:
     3300000: Cube
     4300000: Cube
     10800000: Lamp
+    2186277476908879412: ImportLogs
   externalObjects: {}
   materials:
     importMaterials: 1
@@ -38,6 +37,7 @@ ModelImporter:
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
+    importConstraints: 0
     animationCompression: 1
     animationRotationError: 0.5
     animationPositionError: 0.5

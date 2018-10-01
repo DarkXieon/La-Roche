@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -22,7 +22,7 @@ namespace Prototype.NetworkLobby
 
         public GameObject localIcone;
         public GameObject remoteIcone;
-
+        
         //OnMyName function will be invoked on clients when server change the value of playerName
         [SyncVar(hook = "OnMyName")]
         public string playerName = "";
@@ -39,8 +39,7 @@ namespace Prototype.NetworkLobby
 
         //static Color OddRowColor = new Color(250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f, 1.0f);
         //static Color EvenRowColor = new Color(180.0f / 255.0f, 180.0f / 255.0f, 180.0f / 255.0f, 1.0f);
-
-
+        
         public override void OnClientEnterLobby()
         {
             base.OnClientEnterLobby();
@@ -122,14 +121,20 @@ namespace Prototype.NetworkLobby
             colorButton.interactable = true;
             nameInput.interactable = true;
 
+            var buttonClickSourceAudio = LobbyManager.singleton
+                .GetComponents<AudioSource>()
+                .First(source => !source.loop);
+
             nameInput.onEndEdit.RemoveAllListeners();
             nameInput.onEndEdit.AddListener(OnNameChanged);
 
             colorButton.onClick.RemoveAllListeners();
             colorButton.onClick.AddListener(OnColorClicked);
+            colorButton.onClick.AddListener(() => buttonClickSourceAudio.Play());
 
             readyButton.onClick.RemoveAllListeners();
             readyButton.onClick.AddListener(OnReadyClicked);
+            readyButton.onClick.AddListener(() => buttonClickSourceAudio.Play());
 
             //when OnClientEnterLobby is called, the loval PlayerController is not yet created, so we need to redo that here to disable
             //the add button if we reach maxLocalPlayer. We pass 0, as it was already counted on OnClientEnterLobby

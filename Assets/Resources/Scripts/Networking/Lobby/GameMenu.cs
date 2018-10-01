@@ -48,6 +48,6 @@ public class GameMenu : MonoBehaviour
 
         Cursor.lockState = lockMode; //This locks the players cursor in the middle of the screen and makes it invisible or unlocks it
 
-        Cursor.visible = false;
+        Cursor.visible = _isVisible;
     }
 }

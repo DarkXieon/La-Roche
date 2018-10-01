@@ -14,12 +14,12 @@ public class PlayerHoldingState : NetworkBehaviour
     private GameObject _ball;
 
     [SyncVar]
-    public bool _holdingBall; //Is the player holding the ball or not
+    private bool _holdingBall; //Is the player holding the ball or not
 
     [SyncVar]
     private float _timeLeft;
 
-    //[SerializeField] //[SyncVar]
+    //[SerializeField] [SyncVar]
     private Transform _holdingWith;
     
     [SerializeField]
@@ -31,13 +31,29 @@ public class PlayerHoldingState : NetworkBehaviour
     [SerializeField]
     private float _horisontalAutoTossVelocity = 3f;
 
+    public Material DefaultBallMaterial;
+
+    public Material HeldBallMaterial;
+
+    /*
+    [SyncVar]
+    [SerializeField]
+    private Material _defaultMaterial;
+
+    [SyncVar]
+    [SerializeField]
+    private Material _heldMaterial;
+    */
+
     private GameOverlay _gameOverlay;
 
     private void Start()
     {
         _gameOverlay = GetComponent<GameOverlay>();
-
-        _holdingWith = transform.Find("Chest");
+        
+        _holdingWith = transform.GetComponentsInChildren<Transform>()
+            .First(trans => trans.name == "CameraHolder");
+            //.First(trans => trans.name == "BallHolder");
     }
 
     private void Update()
@@ -87,21 +103,19 @@ public class PlayerHoldingState : NetworkBehaviour
             CmdStartHoldingBall(ball);
 
             var ballBody = ball.GetComponent<Rigidbody>();
-            var ballCatchCollider = ball.GetComponents<SphereCollider>().First(collider => collider.isTrigger);
 
-            //This is used to reset the velcity to zero. It's good to not get into the habit of directly modifying the velocity field
-            var negativeForce = ballBody.velocity * -1;
-
-            ballBody.AddForce(negativeForce, ForceMode.VelocityChange); //resets the velocity to zero
-
+            var ballRenderer = ball.GetComponentInChildren<Renderer>();
+            
             ballBody.isKinematic = true; //We don't want gravity on the ball while we hold it
 
-            ball.transform.position = HoldingWith.position + HoldingWith.forward * 2; ; //sets the ball position
+            ball.transform.position = HoldingWith.position + /*HoldingWith.forward*/ HoldingWith.right * -2; //sets the ball position
 
             ball.transform.parent = HoldingWith.transform; //makes the ball a child to the ball container
 
-            ballCatchCollider.enabled = false;
+            ballRenderer.materials = new Material[] { HeldBallMaterial };
 
+            ball.GetComponentsInChildren<SphereCollider>().ForEach(collider => collider.enabled = false);
+            
             _holdingBall = true; //make sure we know for later we are holding it
             
             _ball = ball; //set it so it's no longer null
@@ -120,19 +134,23 @@ public class PlayerHoldingState : NetworkBehaviour
 
         if (ball != null)
         {
+            CmdStopHoldingBall(ball);
+
             var ballBody = ball.GetComponent<Rigidbody>();
-            var ballCatchCollider = ball.GetComponents<SphereCollider>().First(collider => collider.isTrigger);
 
-            //var negativeForce = ballBody.velocity * -1;
+            var ballCatchCollider = ball.GetComponentsInChildren<SphereCollider>().First(collider => collider.isTrigger);
 
-            //this makes sure that spinning, running, or jumping and letting go of the ball does not affect it's velocity
-            //ballBody.AddForce(negativeForce, ForceMode.VelocityChange);
-
+            var ballRenderer = ball.GetComponentInChildren<Renderer>();
+            
             ballBody.isKinematic = false; //make gravity affect it again
 
             ball.transform.parent = null;
 
             ballCatchCollider.enabled = true;
+
+            ballRenderer.materials = new Material[] { DefaultBallMaterial };
+
+            ball.GetComponentsInChildren<SphereCollider>().ForEach(collider => collider.enabled = true);
 
             _holdingBall = false;
 
@@ -155,10 +173,23 @@ public class PlayerHoldingState : NetworkBehaviour
 
         if(ballIdentity.clientAuthorityOwner != null)
         {
-            ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner);
+            Debug.LogError("Started holding ball when someone else already is.");
         }
 
         ballIdentity.AssignClientAuthority(GetComponent<NetworkIdentity>().connectionToClient);
+    }
+
+    [Command]
+    private void CmdStopHoldingBall(GameObject ball)
+    {
+        var ballIdentity = ball.GetComponent<NetworkIdentity>();
+
+        if (ballIdentity.clientAuthorityOwner == null)
+        {
+            Debug.LogError("Nobody is holding the ball but it was let go of aparently");
+        }
+
+        ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner);
     }
 
     [Command]

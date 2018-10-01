@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Ball
   - WinConditionsManager
+  - Lobby Manager
   layers:
   - Default
   - TransparentFX

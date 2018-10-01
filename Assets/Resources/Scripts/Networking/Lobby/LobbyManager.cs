@@ -59,7 +59,7 @@ namespace Prototype.NetworkLobby
         private void Start()
         {
             singleton = this;
-            
+
             currentPanel = mainMenuPanel;
             
             //backButton.gameObject.SetActive(false);
@@ -78,44 +78,60 @@ namespace Prototype.NetworkLobby
         {
             if (SceneManager.GetSceneAt(0).name == lobbyScene)
             {
-                if (inGameMenu.InGame)//topPanel.isInGame)
-                {
-                    ChangeTo(lobbyPanel);
+                //if (inGameMenu.InGame)//topPanel.isInGame)
+                //{
+                //    ChangeTo(lobbyPanel);
 
-                    if (_isMatchmaking)
-                    {
-                        Debug.Log(conn.playerControllers[0].unetView.isServer);
-                        if (conn.playerControllers[0].unetView.isServer)
-                        {
-                            backDelegate = StopHostClbk;
-                        }
-                        else
-                        {
-                            backDelegate = StopClientClbk;
-                        }
-                    }
-                    else
-                    {
-                        if (conn.playerControllers[0].unetView.isClient)
-                        {
-                            backDelegate = StopHostClbk;
-                        }
-                        else
-                        {
-                            backDelegate = StopClientClbk;
-                        }
-                    }
+                //    if (_isMatchmaking)
+                //    {
+                //        if (conn.playerControllers[0].unetView.isServer)
+                //        {
+                //            backDelegate = StopHostClbk;
+                //        }
+                //        else
+                //        {
+                //            backDelegate = StopClientClbk;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        if (conn.playerControllers[0].unetView.isServer)
+                //        {
+                //            backDelegate = StopHostClbk;
+                //        }
+                //        else
+                //        {
+                //            backDelegate = StopClientClbk;
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    ChangeTo(mainMenuPanel);
+                //}
+
+                //None of the code here runs (I think)
+
+                if (conn.playerControllers[0].unetView.isServer)
+                {
+                    backDelegate = StopHostClbk;
                 }
                 else
                 {
-                    ChangeTo(mainMenuPanel);
+                    backDelegate = StopClientClbk;
                 }
+
+                ChangeTo(mainMenuPanel);
+
+                TurnOffInGameMenu();
+
+                //End of non running code
 
                 //topPanel.ToggleVisibility(true);
                 //topPanel.isInGame = false;
 
-                inGameMenu.InGame = false;
-                inGameMenu.gameObject.SetActive(false);
+                //inGameMenu.InGame = false;
+                //inGameMenu.gameObject.SetActive(false);
             }
             else
             {
@@ -123,13 +139,14 @@ namespace Prototype.NetworkLobby
 
                 Destroy(GameObject.Find("MainMenuUI(Clone)"));
 
+                TurnOnInGameMenu();
                 //backDelegate = StopGameClbk;
                 //topPanel.isInGame = true;
-                inGameMenu.InGame = true;
-                inGameMenu.gameObject.SetActive(true);
+                //inGameMenu.InGame = true;
+                //inGameMenu.gameObject.SetActive(true);
 
                 //topPanel.ToggleVisibility(false);
-                inGameMenu.SetVisibility(false);
+                //inGameMenu.SetVisibility(false);
 
                 //NetworkServer.SpawnWithClientAuthority(Camera, conn);
             }
@@ -139,13 +156,11 @@ namespace Prototype.NetworkLobby
         {
             base.OnLobbyServerSceneChanged(sceneName);
             
-            Debug.Log(sceneName);
-
             if (sceneName == this.playScene)
             {
                 GameObject spawned = Instantiate(spawnPrefabs[0], new Vector3(0, 3, 0), Quaternion.identity);
                 NetworkServer.Spawn(spawned);
-                
+
                 StartCoroutine(WaitForPlayersToJoin(() =>
                 {
                     GameObject toSpawn = Instantiate(spawnPrefabs[1]);
@@ -154,14 +169,12 @@ namespace Prototype.NetworkLobby
                     GameObject toSpawn2 = Instantiate(spawnPrefabs[2]);
                     NetworkServer.Spawn(toSpawn2);
                 }));
+
+                TurnOnInGameMenu();
             }
             else if(sceneName == this.lobbyScene)
             {
-                inGameMenu.SetVisibility(false);
-
-                Cursor.lockState = CursorLockMode.None;
-
-                Cursor.visible = true;
+                TurnOffInGameMenu();
             }
         }
 
@@ -170,11 +183,22 @@ namespace Prototype.NetworkLobby
             var lobbyPlayerCount = lobbySlots
                 .Where(slot => slot != null)
                 .Count();
-            
+
+            Debug.Log(lobbySlots
+                .Where(slot => slot != null)
+                .First()
+                .GetComponent<PlayerStats>() != null);
+
+            Debug.Log(lobbyPlayerCount);
+
             while (lobbyPlayerCount > _gamePlayers)
             {
+                Debug.Log("Players waiting: " + (lobbyPlayerCount - _gamePlayers));
+
                 yield return null;
             }
+
+            Debug.Log("Spawning. . .");
 
             todo.Invoke();
         }
@@ -241,6 +265,8 @@ namespace Prototype.NetworkLobby
         public void SimpleBackClbk()
         {
             ChangeTo(mainMenuPanel);
+
+            TurnOffInGameMenu();
         }
                  
         public void StopHostClbk()
@@ -269,12 +295,36 @@ namespace Prototype.NetworkLobby
             }
 
             ChangeTo(mainMenuPanel);
+
+            TurnOffInGameMenu();
         }
 
         public void StopServerClbk()
         {
             StopServer();
             ChangeTo(mainMenuPanel);
+
+            TurnOffInGameMenu();
+        }
+
+        private void TurnOnInGameMenu()
+        {
+            inGameMenu.gameObject.SetActive(true);
+            inGameMenu.InGame = true;
+            inGameMenu.SetVisibility(false);
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        
+        private void TurnOffInGameMenu()
+        {
+            inGameMenu.InGame = false;
+            inGameMenu.SetVisibility(false);
+            inGameMenu.gameObject.SetActive(false);
+
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
 
         class KickMsg : MessageBase { }
@@ -340,19 +390,41 @@ namespace Prototype.NetworkLobby
         {
             base.OnLobbyServerSceneLoadedForPlayer(lobbyPlayer, gamePlayer);
 
-            var stats = gamePlayer.GetComponent<PlayerStats>();
-
-            var lobbyPlayerComponent = lobbyPlayer.GetComponent<LobbyPlayer>();
+            _gamePlayers++;
             
+            var stats = gamePlayer.GetComponent<PlayerStats>();
+            var lobbyPlayerComponent = lobbyPlayer.GetComponent<LobbyPlayer>();
+
             stats.PlayerName = lobbyPlayerComponent.nameInput.text;
 
-            stats.PlayerColor = lobbyPlayerComponent.playerColor;
+            StartCoroutine(this.WaitForCondition(
+                waitUntilTrue: lobbyManager =>
+                {
+                    var lobbyPlayers = lobbyManager.lobbySlots
+                        .Where(slot => slot != null)
+                        .Count();
 
-            _gamePlayers++;
+                    var spawnedPlayerCount = NetworkServer.objects
+                        .Select(obj => obj.Value.gameObject)
+                        .Where(gameObject => gameObject.tag == "Player")
+                        .Count();
+
+                    var playerIdentity = gamePlayer.GetComponent<NetworkIdentity>();
+
+                    var observerCount = playerIdentity != null && playerIdentity.observers != null
+                        ? playerIdentity.observers.Count
+                        : 0;
+                    
+                    return lobbyPlayers == spawnedPlayerCount && observerCount == spawnedPlayerCount;
+                },
+                whenConditionTrue: () => 
+                {
+                    stats.PlayerColor = lobbyPlayerComponent.playerColor;
+                }));
             
             return true;
         }
-
+        
         //we want to disable the button JOIN if we don't have enough player
         //But OnLobbyClientConnect isn't called on hosting player. So we override the lobbyPlayer creation
         public override GameObject OnLobbyServerCreateLobbyPlayer(NetworkConnection conn, short playerControllerId)
@@ -486,11 +558,13 @@ namespace Prototype.NetworkLobby
         {
             base.OnClientDisconnect(conn);
             ChangeTo(mainMenuPanel);
+            TurnOffInGameMenu();
         }
 
         public override void OnClientError(NetworkConnection conn, int errorCode)
         {
             ChangeTo(mainMenuPanel);
+            TurnOffInGameMenu();
             infoPanel.Display("Cient error : " + (errorCode == 6 ? "timeout" : errorCode.ToString()), "Close", null);
         }
     }

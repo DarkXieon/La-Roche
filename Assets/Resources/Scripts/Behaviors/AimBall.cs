@@ -1,10 +1,17 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 
 public class AimBall : BaseBehavior
 {
     public float MinAimRotation; //NOTE: THIS HAS TO BE GREATER THAN ZERO AS OF RIGHT NOW--IT'S BUGGY OTHERWISE
 
     public float MaxAimRotation;
+
+    public GameObject AimingWith;
+
+    //public GameObject Placeholder;
+
+    //private Camera _viewCamera;
 
     private PlayerHoldingState _holdingState;
 
@@ -26,19 +33,19 @@ public class AimBall : BaseBehavior
 
             if (isRequestingToAim /*&& _holdingState.HoldingBall*/) //for now, the camera and ball will be aimed the same way, so the ball shouldn't have to be held
             {
-                var aimingWith = _holdingState.HoldingWith; //The transform of the object used as a fulcrum
+                var aimingWith = _holdingState.HoldingWith.transform;//AimingWith.transform; //The transform of the object used as a fulcrum
                 var aimingWithLocalRotation = aimingWith.localEulerAngles;
 
                 var tempMaxAimRotation = this.MaxAimRotation;
                 var tempMinAimRotation = this.MinAimRotation;
 
-                var tempLocalRotation = aimingWithLocalRotation.x < -180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
-                    ? aimingWithLocalRotation.x + 360
-                    : aimingWithLocalRotation.x;
+                var tempLocalRotation = aimingWithLocalRotation.z < -180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
+                    ? aimingWithLocalRotation.z + 360
+                    : aimingWithLocalRotation.z;
 
-                tempLocalRotation = aimingWithLocalRotation.x > 180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
-                    ? aimingWithLocalRotation.x - 360
-                    : aimingWithLocalRotation.x;
+                tempLocalRotation = aimingWithLocalRotation.z > 180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
+                    ? aimingWithLocalRotation.z - 360
+                    : aimingWithLocalRotation.z;
                 
                 var rawAimRotation = isAimingUp //determines which button value to use
                     ? this._inputState.GetButtonValue(Buttons.AIM_UP)
@@ -53,15 +60,32 @@ public class AimBall : BaseBehavior
                     : Mathf.Min(rotation, tempMinAimRotation * -1);
                 
                 rotation = rotation < -180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
-                    ? aimingWithLocalRotation.x + 360
+                    ? aimingWithLocalRotation.z + 360
                     : rotation;
 
                 rotation = rotation > 180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
-                    ? aimingWithLocalRotation.x - 360
+                    ? aimingWithLocalRotation.z - 360
                     : rotation;
-                
-                aimingWith.localRotation = Quaternion.Euler(rotation, aimingWithLocalRotation.y, aimingWithLocalRotation.z); //sets the rotation
+
+                //aimingWith.localRotation = Quaternion.Euler(aimingWithLocalRotation.z, rotation, aimingWithLocalRotation.z); //sets the rotation
+
+                //CmdUpdateRotation(aimingWith.gameObject, _holdingState.HoldingWith.gameObject, Quaternion.Euler(aimingWithLocalRotation.x, aimingWithLocalRotation.y, rotation));
+
+                aimingWith.localRotation = Quaternion.Euler(aimingWithLocalRotation.x, aimingWithLocalRotation.y, rotation); //sets the rotation
+
+                //_holdingState.HoldingWith.localRotation = aimingWith.localRotation; //sets the rotation
+
+                //aimingWith.localRotation = Quaternion.Euler(rotation, aimingWithLocalRotation.y, aimingWithLocalRotation.z); //sets the rotation
             }
         }
+    }
+
+    [Command]
+    private void CmdUpdateRotation(GameObject aimingWith, GameObject ballContainer, Quaternion rotation)
+    {
+
+        aimingWith.transform.localRotation = rotation; //sets the rotation
+
+        ballContainer.transform.localRotation = rotation;
     }
 }

@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: AudioController
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: ea015e373b19c804193597f3c173888d,
+      type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Name
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _containerPrefab
+    value: 
+    objectReference: {fileID: 1757666837589462, guid: bb0127862ded118439e46a30e8002025,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.size
+    value: 9
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[0].AudioSource
+    value: 
+    objectReference: {fileID: 82406870247568606, guid: efcdfe844cae2a240b368d15040e2072,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[0].ClipId
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[1].AudioSource
+    value: 
+    objectReference: {fileID: 82559574126719202, guid: acf912565b2c15c42b1d331ca963fbb6,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[1].ClipId
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[2].AudioSource
+    value: 
+    objectReference: {fileID: 82722218712347770, guid: 97bb2871466187741b3ac5861e2551e2,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[2].ClipId
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[3].AudioSource
+    value: 
+    objectReference: {fileID: 82564141653470332, guid: 834fd3a81f58e3c4d9944631ccbc5f67,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[3].ClipId
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[4].AudioSource
+    value: 
+    objectReference: {fileID: 82202846119433720, guid: e714c59b29656d44586d3633d32593e3,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[4].ClipId
+    value: 4
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[5].AudioSource
+    value: 
+    objectReference: {fileID: 82054620646776494, guid: 540f7564941b7d849ac093e7f427c40e,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[5].ClipId
+    value: 5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[6].AudioSource
+    value: 
+    objectReference: {fileID: 82211502119614146, guid: cfc42c6f5ea2cb24ba00b2570f5d495f,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[6].ClipId
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[7].AudioSource
+    value: 
+    objectReference: {fileID: 82211502119614146, guid: cfc42c6f5ea2cb24ba00b2570f5d495f,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[7].ClipId
+    value: 7
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[8].AudioSource
+    value: 
+    objectReference: {fileID: 82955344359939268, guid: 78caed7129090cb408bb72a34eaa153b,
+      type: 2}
+  - target: {fileID: 0}
+    propertyPath: _gameAudio.Array.data[8].ClipId
+    value: 8
+    objectReference: {fileID: 0}

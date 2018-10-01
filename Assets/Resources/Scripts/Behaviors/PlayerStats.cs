@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Networking;
+using System.Linq;
 
 public class PlayerStats : NetworkBehaviour
 {
@@ -27,7 +28,7 @@ public class PlayerStats : NetworkBehaviour
             _outs = 0;
         }
     }
-
+    
     public void AddElimination()
     {
         _eliminations++;
@@ -40,9 +41,28 @@ public class PlayerStats : NetworkBehaviour
     
     private void OnPlayerColorChanged(Color color)
     {
-        GetComponent<Renderer>().material.color = color;
+        if(isServer)
+        {
+            RpcSetColor(color);
+        }
+        else
+        {
+            CmdSetColor(color);
+        }
     }
 
+    [Command]
+    private void CmdSetColor(Color color)
+    {
+        RpcSetColor(color);
+    }
+
+    [ClientRpc]
+    private void RpcSetColor(Color color)
+    {
+        GetComponentInChildren<SkinnedMeshRenderer>().material.color = color;
+    }
+    
     private void OnPlayerNameChanged(string name)
     {
         gameObject.name = name;
