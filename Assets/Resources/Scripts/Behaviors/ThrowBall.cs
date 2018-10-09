@@ -38,7 +38,9 @@ public class ThrowBall : BaseBehavior
                 _currentHoldTime = _inputState.GetButtonHoldTime(Buttons.THROW);
 
                 CmdSetPowerOverlay(Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f));
+
                 CmdStartAimAnimation();
+
                 _audioController.PlayAudio(AudioClips.PlayerThrowV1);
             }
             else if (!_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall && _currentHoldTime > 0f) //if the throw button is not pressed, the player is holding the ball, and the player WAS holding the throw button

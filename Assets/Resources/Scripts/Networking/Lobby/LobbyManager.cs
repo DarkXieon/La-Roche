@@ -21,10 +21,7 @@ namespace Prototype.NetworkLobby
         [Header("Unity UI Lobby")]
         [Tooltip("Time in second between all players ready & match start")]
         public float prematchCountdown = 5.0f;
-
-        //[Space]
-        //[Header("UI Reference")]
-        //public LobbyTopPanel topPanel;
+        
         public GameMenu inGameMenu;
 
         public RectTransform mainMenuPanel;
@@ -37,9 +34,7 @@ namespace Prototype.NetworkLobby
         protected RectTransform currentPanel;
 
         protected int _gamePlayers;
-
-        //public Button backButton;
-
+        
         public Text statusInfo;
         public Text hostInfo;
 
@@ -62,13 +57,10 @@ namespace Prototype.NetworkLobby
 
             currentPanel = mainMenuPanel;
             
-            //backButton.gameObject.SetActive(false);
             GetComponent<Canvas>().enabled = true;
 
             DontDestroyOnLoad(gameObject);
-
-            //SetServerInfo("Offline", "None");
-
+            
             showLobbyGUI = false;
 
             _gamePlayers = 0;
@@ -183,14 +175,7 @@ namespace Prototype.NetworkLobby
             var lobbyPlayerCount = lobbySlots
                 .Where(slot => slot != null)
                 .Count();
-
-            Debug.Log(lobbySlots
-                .Where(slot => slot != null)
-                .First()
-                .GetComponent<PlayerStats>() != null);
-
-            Debug.Log(lobbyPlayerCount);
-
+            
             while (lobbyPlayerCount > _gamePlayers)
             {
                 Debug.Log("Players waiting: " + (lobbyPlayerCount - _gamePlayers));
@@ -219,12 +204,10 @@ namespace Prototype.NetworkLobby
 
             if (currentPanel != mainMenuPanel)
             {
-                //backButton.gameObject.SetActive(true);
+                _isMatchmaking = true;
             }
             else
             {
-                //backButton.gameObject.SetActive(false);
-                //SetServerInfo("Offline", "None");
                 _isMatchmaking = false;
             }
         }
@@ -234,20 +217,13 @@ namespace Prototype.NetworkLobby
             var _this = this;
             infoPanel.Display("Connecting...", "Cancel", () => { _this.backDelegate(); });
         }
-        /*
-        public void SetServerInfo(string status, string host)
-        {
-            statusInfo.text = status;
-            hostInfo.text = host;
-        }
-        */
+
         public delegate void BackButtonDelegate();
         public BackButtonDelegate backDelegate;
 
         public void GoBackButton()
         {
             backDelegate();
-			//topPanel.isInGame = false;
         }
 
         // ----------------- Server management
@@ -328,6 +304,7 @@ namespace Prototype.NetworkLobby
         }
 
         class KickMsg : MessageBase { }
+
         public void KickPlayer(NetworkConnection conn)
         {
             conn.Send(MsgKicked, new KickMsg());
@@ -352,7 +329,6 @@ namespace Prototype.NetworkLobby
 
             ChangeTo(lobbyPanel);
             backDelegate = StopHostClbk;
-            //SetServerInfo("Hosting", networkAddress);
         }
 
 		public override void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
@@ -537,6 +513,13 @@ namespace Prototype.NetworkLobby
         }
 
         // ----------------- Client callbacks ------------------
+
+        public override void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo)
+        {
+            mainMenuPanel.GetComponent<LobbyMainMenu>().FoundMatch = true;
+
+            base.OnMatchJoined(success, extendedInfo, matchInfo);
+        }
 
         public override void OnClientConnect(NetworkConnection conn)
         {
