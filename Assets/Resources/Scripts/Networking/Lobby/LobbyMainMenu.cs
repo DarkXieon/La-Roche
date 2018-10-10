@@ -15,9 +15,24 @@ public class LobbyMainMenu : MonoBehaviour
     public RectTransform lobbyPanel;
     public RectTransform lobbyServerList;
     public Text matchNameInput;
-
-    [NonSerialized] public bool FoundMatch;
     
+    [NonSerialized] public bool FoundMatch;
+
+    private string previousMatchName;
+    private float timer;
+
+    public void Update()
+    {
+        if(timer > 0f)
+        {
+            timer -= Time.deltaTime;
+        }
+        else
+        {
+            previousMatchName = null;
+        }
+    }
+
     public void OnClickHost()
     {
         LobbyManager.singleton.StartHost();
@@ -109,7 +124,7 @@ public class LobbyMainMenu : MonoBehaviour
     public void RequestJoinMatch()
     {
         LobbyManager.singleton.StartMatchMaker();
-
+        
         //StartCoroutine(TryListMatches());
         LobbyManager.singleton.matchMaker.ListMatches(0, 6, "", true, 0, 0, JoinMatch);
     }
@@ -118,10 +133,13 @@ public class LobbyMainMenu : MonoBehaviour
     {
         if(success && matches.Any())
         {
-            var matchToJoin = matches.FirstOrDefault(match => match.currentSize < match.maxSize);
+            var matchToJoin = matches.FirstOrDefault(match => match.currentSize < match.maxSize && match.name != previousMatchName);
 
             if(matchToJoin != null)
             {
+                previousMatchName = matchToJoin.name;
+                timer = 10f;
+
                 LobbyManager.singleton.matchMaker.JoinMatch(matchToJoin.networkId, "", "", "", 0, 0, LobbyManager.singleton.OnMatchJoined);
                 LobbyManager.singleton.backDelegate = LobbyManager.singleton.StopClientClbk;
                 LobbyManager.singleton._isMatchmaking = true;

@@ -886,7 +886,7 @@ MonoBehaviour:
     m_MaxTimerTimeout: 12000
     m_MinNetSimulatorTimeout: 1
     m_MaxNetSimulatorTimeout: 12000
-  m_Channels: 
+  m_Channels: 0500000000000000
   m_UseWebSockets: 0
   m_UseSimulator: 0
   m_SimulatedLatency: 1
@@ -896,16 +896,16 @@ MonoBehaviour:
   m_MatchHost: mm.unet.unity3d.com
   m_MatchPort: 443
   matchName: default
-  matchSize: 4
+  matchSize: 8
   isNetworkActive: 0
   matchMaker: {fileID: 0}
   m_ShowLobbyGUI: 1
   m_MaxPlayers: 8
   m_MaxPlayersPerConnection: 1
-  m_MinPlayers: 0
+  m_MinPlayers: 1
   m_LobbyPlayerPrefab: {fileID: 11487034, guid: 1e49071983b63f34c89517d80c0f5f5c,
     type: 2}
-  m_GamePlayerPrefab: {fileID: 1212141881534230, guid: 0da1295289a6b51418085aa748791850,
+  m_GamePlayerPrefab: {fileID: 1695137580324704, guid: 00180335f89cd2a4fbf0bbdee70e54d0,
     type: 2}
   m_LobbyScene: OpenScene
   m_PlayScene: MapScene
