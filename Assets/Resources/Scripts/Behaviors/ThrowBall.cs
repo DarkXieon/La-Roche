@@ -47,26 +47,29 @@ public class ThrowBall : BaseBehavior
             {
                 var ball = _holdingState.StopHoldingBall();
 
-                CmdThrowBall(ball);
+                var forceAxis = transform.GetComponentInChildren<Camera>().transform.forward;
+
+                CmdThrowBall(ball, forceAxis);
+                
+                StartThrowAnimation();
+
+                _currentHoldTime = 0f;
             }
         }
     }
     
     [Command]
-    private void CmdThrowBall(GameObject ball)
+    private void CmdThrowBall(GameObject ball, Vector3 forceAxis)
     {
         var ballBody = ball.GetComponent<Rigidbody>();
-
-        var forceAxis = _holdingState.HoldingWith.right/*forward*/ * -1; //the forward axis relative to the object's current rotation
-        var forceMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f);//Mathf.Min(_currentHoldTime, _maxPowerHoldTime) / _maxPowerHoldTime; //this changes power based on hold time
-        var force = forceMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;//Mathf.Max(_maxThrowPower * forceMultiplier, _minThrowPower);
+        
+        var forceMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f); //this changes power based on hold time
+        var force = forceMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;
         var forceOnAxis = forceAxis * force;
 
         ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
 
         SetThrown(ball);
-        StartThrowAnimation();
-
         _currentHoldTime = 0f;
     }
     

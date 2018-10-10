@@ -100,7 +100,16 @@ public class PlayerHoldingState : NetworkBehaviour
 
         if (ball.tag == "Ball") //The game ball should be the ONLY gameobject with that tag
         {
-            CmdStartHoldingBall(ball);
+            if (isServer)
+            {
+                StartHoldingBall(ball.GetComponent<NetworkIdentity>(), GetComponent<NetworkIdentity>());
+            }
+            else
+            {
+                CmdStartHoldingBall(ball.GetComponent<NetworkIdentity>(), GetComponent<NetworkIdentity>());
+            }
+
+            //CmdStartHoldingBall(ball.GetComponent<NetworkIdentity>(), GetComponent<NetworkIdentity>());
 
             var ballBody = ball.GetComponent<Rigidbody>();
 
@@ -134,8 +143,15 @@ public class PlayerHoldingState : NetworkBehaviour
 
         if (ball != null)
         {
-            CmdStopHoldingBall(ball);
-
+            if(isServer)
+            {
+                StopHoldingBall(ball.GetComponent<NetworkIdentity>());
+            }
+            else
+            {
+                CmdStopHoldingBall(ball.GetComponent<NetworkIdentity>());
+            }
+            
             var ballBody = ball.GetComponent<Rigidbody>();
 
             var ballCatchCollider = ball.GetComponentsInChildren<SphereCollider>().First(collider => collider.isTrigger);
@@ -165,33 +181,66 @@ public class PlayerHoldingState : NetworkBehaviour
 
         return ball;
     }
-
-    [Command]
-    private void CmdStartHoldingBall(GameObject ball)
+    
+    private void StartHoldingBall(NetworkIdentity ballIdentity, NetworkIdentity clientIdentity)
     {
-        var ballIdentity = ball.GetComponent<NetworkIdentity>();
-
-        if(ballIdentity.clientAuthorityOwner != null)
+        if (ballIdentity.clientAuthorityOwner != null)
         {
             Debug.LogError("Started holding ball when someone else already is.");
         }
 
-        ballIdentity.AssignClientAuthority(GetComponent<NetworkIdentity>().connectionToClient);
+        if (!ballIdentity.AssignClientAuthority(clientIdentity.connectionToClient))//GetComponent<NetworkIdentity>().connectionToClient))
+        {
+            Debug.LogError("Failed to add client authority.");
+        }
     }
 
     [Command]
-    private void CmdStopHoldingBall(GameObject ball)
+    private void CmdStartHoldingBall(NetworkIdentity ballIdentity, NetworkIdentity clientIdentity)
     {
-        var ballIdentity = ball.GetComponent<NetworkIdentity>();
+        StartHoldingBall(ballIdentity, clientIdentity);
+        //if(ballIdentity.clientAuthorityOwner != null)
+        //{
+        //    Debug.LogError("Started holding ball when someone else already is.");
+        //}
+
+        //if (!ballIdentity.AssignClientAuthority(clientIdentity.connectionToClient))//GetComponent<NetworkIdentity>().connectionToClient))
+        //{
+        //    Debug.LogError("Failed to add client authority.");
+        //}
+    }
+
+    private void StopHoldingBall(NetworkIdentity ballIdentity)//GameObject ball)
+    {
+        //var ballIdentity = ball.GetComponent<NetworkIdentity>();
 
         if (ballIdentity.clientAuthorityOwner == null)
         {
             Debug.LogError("Nobody is holding the ball but it was let go of aparently");
         }
 
-        ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner);
+        if (!ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner))
+        {
+            Debug.LogError("Failed to remove client authority.");
+        }
     }
 
+    [Command]
+    private void CmdStopHoldingBall(NetworkIdentity ballIdentity)//GameObject ball)
+    {
+        StopHoldingBall(ballIdentity);
+
+        //if (ballIdentity.clientAuthorityOwner == null)
+        //{
+        //    Debug.LogError("Nobody is holding the ball but it was let go of aparently");
+        //}
+
+        //if (!ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner))
+        //{
+        //    Debug.LogError("Failed to remove client authority.");
+        //}
+    }
+    
     [Command]
     private void CmdSetOverlayMessage(string message)
     {

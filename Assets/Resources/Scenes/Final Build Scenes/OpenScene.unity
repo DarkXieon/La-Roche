@@ -353,7 +353,7 @@ Prefab:
     - target: {fileID: 114208791656821214, guid: 09f2d6920a82aa1488c96cd9698437b1,
         type: 2}
       propertyPath: m_Text
-      value: 127.0.0.1
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 09f2d6920a82aa1488c96cd9698437b1, type: 2}
