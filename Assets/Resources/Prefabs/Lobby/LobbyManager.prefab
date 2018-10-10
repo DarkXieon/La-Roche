@@ -913,6 +913,7 @@ MonoBehaviour:
   LobbyFallback: {fileID: 155310}
   prematchCountdown: 5
   inGameMenu: {fileID: 114139644562451028}
+  topPanel: {fileID: 224622126239401916}
   mainMenuPanel: {fileID: 224973848061919236}
   lobbyPanel: {fileID: 22443498}
   infoPanel: {fileID: 11442006}
