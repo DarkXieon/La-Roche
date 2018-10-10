@@ -910,6 +910,7 @@ MonoBehaviour:
   m_LobbyScene: OpenScene
   m_PlayScene: MapScene
   lobbySlots: []
+  LobbyFallback: {fileID: 155310}
   prematchCountdown: 5
   inGameMenu: {fileID: 114139644562451028}
   mainMenuPanel: {fileID: 224973848061919236}

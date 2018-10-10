@@ -18,6 +18,8 @@ namespace Prototype.NetworkLobby
 
         public static new LobbyManager singleton;
 
+        public GameObject LobbyFallback;
+
         [Header("Unity UI Lobby")]
         [Tooltip("Time in second between all players ready & match start")]
         public float prematchCountdown = 5.0f;
@@ -459,13 +461,10 @@ namespace Prototype.NetworkLobby
 
             NetworkServer.Shutdown();
         }
-        
-        public override void OnLobbyClientExit()
+
+        public override void OnLobbyClientConnect(NetworkConnection conn)
         {
-            base.OnLobbyClientExit();
-            
-            //if(_isMatchmaking)
-                //StopMatchMaker();
+            base.OnLobbyClientConnect(conn);
         }
 
         // --- Countdown management
@@ -524,9 +523,19 @@ namespace Prototype.NetworkLobby
 
         public override void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo)
         {
-            mainMenuPanel.GetComponent<LobbyMainMenu>().FoundMatch = true;
-
             base.OnMatchJoined(success, extendedInfo, matchInfo);
+
+            if(success)
+            {
+                mainMenuPanel.GetComponent<LobbyMainMenu>().FoundMatch = true;
+
+                if (!NetworkServer.active)
+                {//only to do on pure client (not self hosting client)
+                    ChangeTo(lobbyPanel);
+                    backDelegate = StopClientClbk;
+                    //SetServerInfo("Client", networkAddress);
+                }
+            }
         }
 
         public override void OnClientConnect(NetworkConnection conn)
@@ -547,16 +556,37 @@ namespace Prototype.NetworkLobby
 
         public override void OnClientDisconnect(NetworkConnection conn)
         {
-            base.OnClientDisconnect(conn);
-            ChangeTo(mainMenuPanel);
-            TurnOffInGameMenu();
+            //try
+            //{
+                base.OnClientDisconnect(conn);
+            //}
+            //catch { }
+            //finally
+            //{
+            //    ChangeTo(mainMenuPanel);
+            //    TurnOffInGameMenu();
+            //}
+
+            GameObject.Instantiate(LobbyFallback);
+            GameObject.Destroy(this.gameObject);
         }
 
         public override void OnClientError(NetworkConnection conn, int errorCode)
         {
-            ChangeTo(mainMenuPanel);
-            TurnOffInGameMenu();
-            infoPanel.Display("Cient error : " + (errorCode == 6 ? "timeout" : errorCode.ToString()), "Close", null);
-        }
+            //try
+            //{
+                base.OnClientError(conn, errorCode);
+            //}
+            //catch { }
+            //finally
+            //{
+            //    ChangeTo(mainMenuPanel);
+            //    TurnOffInGameMenu();
+            //    infoPanel.Display("Cient error : " + (errorCode == 6 ? "timeout" : errorCode.ToString()), "Close", null);
+            //}
+
+            GameObject.Instantiate(LobbyFallback);
+            GameObject.Destroy(this.gameObject);
+        } 
     }
 }
