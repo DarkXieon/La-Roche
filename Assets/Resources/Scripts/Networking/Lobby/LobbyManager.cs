@@ -460,6 +460,14 @@ namespace Prototype.NetworkLobby
             NetworkServer.Shutdown();
         }
         
+        public override void OnLobbyClientExit()
+        {
+            base.OnLobbyClientExit();
+            
+            //if(_isMatchmaking)
+                //StopMatchMaker();
+        }
+
         // --- Countdown management
 
         public override void OnLobbyServerPlayersReady()

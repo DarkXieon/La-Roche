@@ -51,8 +51,6 @@ public class ThrowBall : BaseBehavior
 
                 CmdThrowBall(ball, forceAxis);
                 
-                StartThrowAnimation();
-
                 _currentHoldTime = 0f;
             }
         }
@@ -70,6 +68,8 @@ public class ThrowBall : BaseBehavior
         ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
 
         SetThrown(ball);
+        StartThrowAnimation();
+
         _currentHoldTime = 0f;
     }
     

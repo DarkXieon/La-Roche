@@ -5,9 +5,10 @@ using UnityEngine.Networking;
 
 public class Jump : BaseBehavior
 {
-    public Vector3 jump; // controls height of jump
-    public float jumpForce = 2.0f;
-    public float velocityTest = 0.5f;
+    public float JumpHeight;
+    //public Vector3 jump; // controls height of jump
+    //public float jumpForce = 2.0f;
+    //public float velocityTest = 0.5f;
     private bool wasOnGround = false;
 
     private PlayerFrozenState _playerFrozenState;
@@ -21,7 +22,7 @@ public class Jump : BaseBehavior
     {
         base.Start();
 
-        jump = new Vector3(0.0f, 2.0f, 0.0f); // set jump height value here
+        //jump = new Vector3(0.0f, 2.0f, 0.0f); // set jump height value here
 
         _playerFrozenState = GetComponent<PlayerFrozenState>();
         _animationSwitcher = GetComponent<AnimationSwitcher>();
@@ -42,11 +43,12 @@ public class Jump : BaseBehavior
 
             if (_inputState.IsPressed(Buttons.JUMP) && isTouchingGround && !_playerFrozenState.IsFrozen) // checks if jump button is pressed and gizmo is colliding with terrain
             {
-                //var quickfix = this.transform.up;
-                _body.AddForce(jump/*jumpForce*/, ForceMode.VelocityChange);
+                float jumpVelocity = Mathf.Sqrt(2 * Mathf.Abs(Physics.gravity.y) * (JumpHeight - 1));
+
+                _body.velocity = new Vector3(_body.velocity.x, jumpVelocity, _body.velocity.z);//Vector3.up * jumpVelocity;
+
                 CmdStartJumpAnimation();
             }
-            //Debug.Log(isTouchingGround);
         }
     }
     
