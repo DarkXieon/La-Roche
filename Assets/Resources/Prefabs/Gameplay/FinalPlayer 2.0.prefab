@@ -120,8 +120,8 @@ GameObject:
   - component: {fileID: 114557538394962162}
   - component: {fileID: 114075498428916090}
   - component: {fileID: 114736102994515734}
-  - component: {fileID: 114120651036084174}
   - component: {fileID: 114529675433885768}
+  - component: {fileID: 114120651036084174}
   - component: {fileID: 114297109540846938}
   m_Layer: 0
   m_Name: FinalPlayer 2.0
