@@ -26,6 +26,7 @@ namespace Prototype.NetworkLobby
         
         public GameMenu inGameMenu;
 
+        public RectTransform topPanel;
         public RectTransform mainMenuPanel;
         public RectTransform lobbyPanel;
 
@@ -290,6 +291,7 @@ namespace Prototype.NetworkLobby
             inGameMenu.gameObject.SetActive(true);
             inGameMenu.InGame = true;
             inGameMenu.SetVisibility(false);
+            topPanel.gameObject.SetActive(false);
 
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -300,6 +302,7 @@ namespace Prototype.NetworkLobby
             inGameMenu.InGame = false;
             inGameMenu.SetVisibility(false);
             inGameMenu.gameObject.SetActive(false);
+            topPanel.gameObject.SetActive(true);
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
