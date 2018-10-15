@@ -18,7 +18,7 @@ namespace Prototype.NetworkLobby
 
         public static new LobbyManager singleton;
 
-        public bool PlayerSpawnsFinished
+        public bool PlayersFullyJoined
         {
             get
             {
@@ -60,19 +60,7 @@ namespace Prototype.NetworkLobby
                 return false;
             }
         }
-
-        public bool AllPlayersJoined
-        {
-            get
-            {
-                int lobbyPlayerCount = lobbySlots
-                    .Where(slot => slot != null)
-                    .Count();
-                
-                return lobbyPlayerCount == numPlayers;
-            }
-        }
-
+        
         public GameObject LobbyFallback;
 
         [Header("Unity UI Lobby")]
@@ -90,8 +78,6 @@ namespace Prototype.NetworkLobby
         public GameObject addPlayerButton;
 
         protected RectTransform currentPanel;
-        
-        public int _gamePlayers;
         
         public Text statusInfo;
         public Text hostInfo;
@@ -118,17 +104,10 @@ namespace Prototype.NetworkLobby
             GetComponent<Canvas>().enabled = true;
 
             DontDestroyOnLoad(gameObject);
-            
+
             showLobbyGUI = false;
-
-            _gamePlayers = 0;
         }
-
-        private void Update()
-        {
-            Debug.Log(PlayerSpawnsFinished);
-        }
-
+        
         public void RestartManager()
         {
             GameObject.Instantiate(LobbyFallback);
@@ -140,39 +119,7 @@ namespace Prototype.NetworkLobby
         {
             if (SceneManager.GetSceneAt(0).name == lobbyScene)
             {
-                //if (inGameMenu.InGame)//topPanel.isInGame)
-                //{
-                //    ChangeTo(lobbyPanel);
-
-                //    if (_isMatchmaking)
-                //    {
-                //        if (conn.playerControllers[0].unetView.isServer)
-                //        {
-                //            backDelegate = StopHostClbk;
-                //        }
-                //        else
-                //        {
-                //            backDelegate = StopClientClbk;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        if (conn.playerControllers[0].unetView.isServer)
-                //        {
-                //            backDelegate = StopHostClbk;
-                //        }
-                //        else
-                //        {
-                //            backDelegate = StopClientClbk;
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    ChangeTo(mainMenuPanel);
-                //}
-
-                //None of the code here runs (I think)
+                ChangeTo(mainMenuPanel);
 
                 if (conn.playerControllers[0].unetView.isServer)
                 {
@@ -183,19 +130,9 @@ namespace Prototype.NetworkLobby
                     backDelegate = StopClientClbk;
                 }
 
-                ChangeTo(mainMenuPanel);
-
                 TurnOffInGameMenu();
 
-                RestartManager();
-
-                //End of non running code
-
-                //topPanel.ToggleVisibility(true);
-                //topPanel.isInGame = false;
-
-                //inGameMenu.InGame = false;
-                //inGameMenu.gameObject.SetActive(false);
+                //RestartManager();
             }
             else
             {
@@ -204,15 +141,6 @@ namespace Prototype.NetworkLobby
                 Destroy(GameObject.Find("MainMenuUI(Clone)"));
 
                 TurnOnInGameMenu();
-                //backDelegate = StopGameClbk;
-                //topPanel.isInGame = true;
-                //inGameMenu.InGame = true;
-                //inGameMenu.gameObject.SetActive(true);
-
-                //topPanel.ToggleVisibility(false);
-                //inGameMenu.SetVisibility(false);
-
-                //NetworkServer.SpawnWithClientAuthority(Camera, conn);
             }
         }
 
@@ -240,20 +168,14 @@ namespace Prototype.NetworkLobby
             {
                 TurnOffInGameMenu();
                 
-                RestartManager();
+                //RestartManager();
             }
         }
 
         private IEnumerator WaitForPlayersToJoin(Action todo)
         {
-            var lobbyPlayerCount = lobbySlots
-                .Where(slot => slot != null)
-                .Count();
-            
-            while (lobbyPlayerCount > _gamePlayers)
+            while(!PlayersFullyJoined)
             {
-                Debug.Log("Players waiting: " + (lobbyPlayerCount - _gamePlayers));
-
                 yield return null;
             }
 
@@ -279,11 +201,15 @@ namespace Prototype.NetworkLobby
             if (currentPanel != mainMenuPanel)
             {
                 _isMatchmaking = true;
+
+                backDelegate += SimpleBackClbk;
             }
             else
             {
                 _isMatchmaking = false;
-                
+
+                backDelegate -= SimpleBackClbk;
+
                 //RestartManager();
             }
         }
@@ -318,7 +244,7 @@ namespace Prototype.NetworkLobby
         {
             ChangeTo(mainMenuPanel);
 
-            TurnOffInGameMenu();
+            //TurnOffInGameMenu();
         }
                  
         public void StopHostClbk()
@@ -334,6 +260,8 @@ namespace Prototype.NetworkLobby
             }
             
             ChangeTo(mainMenuPanel);
+
+            TurnOffInGameMenu();
 
             RestartManager();
         }
@@ -450,39 +378,38 @@ namespace Prototype.NetworkLobby
         public override bool OnLobbyServerSceneLoadedForPlayer(GameObject lobbyPlayer, GameObject gamePlayer)
         {
             base.OnLobbyServerSceneLoadedForPlayer(lobbyPlayer, gamePlayer);
-
-            _gamePlayers++;
             
             var stats = gamePlayer.GetComponent<PlayerStats>();
             var lobbyPlayerComponent = lobbyPlayer.GetComponent<LobbyPlayer>();
 
             stats.PlayerName = lobbyPlayerComponent.nameInput.text;
 
-            StartCoroutine(this.WaitForCondition(
-                waitUntilTrue: lobbyManager =>
-                {
-                    var playerIdentity = gamePlayer.GetComponent<NetworkIdentity>();
+            StartCoroutine(WaitForPlayersToJoin(() => stats.PlayerColor = lobbyPlayerComponent.playerColor));
 
-                    var lobbyPlayers = lobbyManager.lobbySlots
-                        .Where(slot => slot != null)
-                        .Count();
+            //waitUntilTrue: lobbyManager =>
+            //{
+            //    var playerIdentity = gamePlayer.GetComponent<NetworkIdentity>();
 
-                    var spawnedPlayerCount = NetworkServer.objects
-                        .Select(obj => obj.Value.gameObject)
-                        .Where(gameObject => gameObject.tag == "Player")
-                        .Count();
+            //    var lobbyPlayers = lobbyManager.lobbySlots
+            //        .Where(slot => slot != null)
+            //        .Count();
 
-                    var observerCount = playerIdentity != null && playerIdentity.observers != null
-                        ? playerIdentity.observers.Count
-                        : 0;
-                                      
-                    return lobbyPlayers == spawnedPlayerCount && observerCount == spawnedPlayerCount;
-                },
-                whenConditionTrue: () => 
-                {
-                    stats.PlayerColor = lobbyPlayerComponent.playerColor;
-                }));
-            
+            //    var spawnedPlayerCount = NetworkServer.objects
+            //        .Select(obj => obj.Value.gameObject)
+            //        .Where(gameObject => gameObject.tag == "Player")
+            //        .Count();
+
+            //    var observerCount = playerIdentity != null && playerIdentity.observers != null
+            //        ? playerIdentity.observers.Count
+            //        : 0;
+
+            //    return lobbyPlayers == spawnedPlayerCount && observerCount == spawnedPlayerCount;
+            //},
+            //whenConditionTrue: () => 
+            //{
+            //stats.PlayerColor = lobbyPlayerComponent.playerColor;
+            //}));
+
             return true;
         }
         

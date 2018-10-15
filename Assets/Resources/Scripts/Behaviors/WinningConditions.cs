@@ -10,8 +10,25 @@ public class WinningConditions : NetworkBehaviour
     protected PlayerConditionState[] _playerConditions;
     protected PlayerStats[] _stats;
     protected GameOverlay[] _overlays;
+
+    protected bool matchOver;
     
-    //private List<int> _winnerIndexList; // the list of everyone with the highest score (only more than one item if a tie)
+    protected virtual void Awake()
+    {
+        SetPlayersAndStats();
+
+        matchOver = false;
+    }
+
+    protected virtual void Update()
+    {
+        GameObject winner;
+
+        if(!matchOver && OnePlayerLeft(out winner))
+        {
+            DisplayWinners(winner);
+        }
+    }
 
     protected GameObject[] GetTopPlayers()
     {
@@ -27,43 +44,30 @@ public class WinningConditions : NetworkBehaviour
             .ToArray();
 
         return winningPlayers;
-        
-        /*
-        int highEliminations = 0;  // Highest Elimination value
-        int lowOuts = 0; // Highest Out value
-        _winnerIndexList = new List<int>();
-            
-        foreach (var stat in _stats)
-        {
-            if(stat.Eliminations > highEliminations || (stat.Eliminations == highEliminations && stat.Outs < lowOuts))
-            {
-                highEliminations = stat.Eliminations;
-                lowOuts = stat.Outs;
-                Debug.Log("new high elimination");
-            }
-        }
-
-        for(int i = 0; i < _stats.Length; i++) // Check for ties
-        {
-            var stat = _stats[i];
-
-            if (stat.Eliminations == highEliminations && stat.Outs == lowOuts)
-            {
-                _winnerIndexList.Add(i); // add to list of players who tied
-            }
-        }
-            
-        Debug.Log(lowOuts + " low outs  and " + highEliminations + " best eliminations"); // just a test of how many the best player got
-
-        var winningPlayers = _winnerIndexList
-            .Select(index => _players[index])
-            .ToArray();
-
-        WinConditionMet(winningPlayers);
-        */
     }
 
-    protected void SetPlayersAndStats()
+    protected void DisplayWinners(params GameObject[] winners)
+    {
+        winners
+            .Select(winner => winner.GetComponent<PlayerStats>())
+            .ToList()
+            .ForEach(winner =>
+            {
+                Debug.Log(string.Format("Winner got {0} eliminations", winner.Eliminations));
+                Debug.Log(string.Format("Winner got out {0} times", winner.Outs));
+            });
+
+        string winnerNames = GetWinnerNames(winners);
+
+        string overlayMessage = string.Format("{0} won the game!", winnerNames);
+
+        foreach (GameOverlay overlay in _overlays)
+        {
+            overlay.CurrentMessage = overlayMessage;
+        }
+    }
+
+    private void SetPlayersAndStats()
     {
         _players = FindObjectsOfType<GameObject>()
             .Where(obj => obj.tag == "Player")
@@ -81,36 +85,20 @@ public class WinningConditions : NetworkBehaviour
         }
     }
     
-    protected bool OnePlayerLeft()
+    private bool OnePlayerLeft(out GameObject winner)
     {
-        int playersLeft = _playerConditions
-            .Where(player => !player.IsOut)
-            .Count();
+        var playersLeft = _playerConditions
+            .Where(player => !player.IsOut);
 
-        return playersLeft == 1;
+        bool onePlayerLeft = playersLeft.Count() == 1;
+
+        winner = onePlayerLeft
+            ? playersLeft.First().gameObject
+            : null;
+
+        return onePlayerLeft;
     }
 
-    protected void WinConditionMet(params GameObject[] winners)
-    {
-        winners
-            .Select(winner => winner.GetComponent<PlayerStats>())
-            .ToList()
-            .ForEach(winner =>
-            {
-                Debug.Log(string.Format("Winner got {0} eliminations", winner.Eliminations));
-                Debug.Log(string.Format("Winner got out {0} times", winner.Outs));
-            });
-
-        string winnerNames = GetWinnerNames(winners);
-
-        string overlayMessage = string.Format("{0} won the game!", winnerNames);
-
-        foreach(GameOverlay overlay in _overlays)
-        {
-            overlay.CurrentMessage = overlayMessage;
-        }
-    }
-    
     private string GetWinnerNames(GameObject[] winners)
     {
         string nameString = "";

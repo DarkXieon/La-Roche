@@ -8,71 +8,51 @@ using UnityEngine;
 /// </summary>
 public class GameTimer : WinningConditions
 {
-    [SerializeField]
     private float _timeLeft;
-
-    private bool _stop;
+    
     private float _minutes;
     private float _seconds;
 
-    private bool _initilized = false;
-    
-    protected void Awake()
+    protected override void Awake()
     {
-        StartCoroutine(this.WaitForCondition(
-            waitUntilTrue: gameTimer => FindObjectsOfType<GameObject>()
-                .Where(obj => obj.tag == "Player")
-                .All(player => player.GetComponent<PlayerStats>() != null),
-            whenConditionTrue: () =>
-            {
-                SetPlayersAndStats();
-                StartCoroutine(UpdateCoroutine());
+        base.Awake();
 
-                _stop = false;
-                _initilized = true;
-            }));
+        StartCoroutine(UpdateCoroutine());
     }
 
-    public void Update()
+    protected override void Update()
     {
-        if(_initilized)
+        base.Update();
+
+        SetTime();
+
+        if(!matchOver && TimeUp())
         {
-            if (OnePlayerLeft())
-            {
-                _stop = true;
-            }
-            if (!_stop)
-            {
-                SetTime();
+            matchOver = true;
 
-                if (_minutes <= 0 && _seconds <= 0)
-                {
-                    _stop = true;
-                    _minutes = 0;
-                    _seconds = 0;
-                }
-            }
-            if (_stop)
-            {
-                var winners = GetTopPlayers();
+            var winners = GetTopPlayers();
 
-                WinConditionMet(winners);
-            }
+            DisplayWinners(winners);
         }
     }
     
     private void SetTime()
     {
-        _timeLeft -= Time.deltaTime;
+        _timeLeft = Mathf.Min(0f, _timeLeft - Time.deltaTime);
         _minutes = Mathf.Floor(_timeLeft / 60);
         _seconds = _timeLeft % 60;
         if (_seconds > 59)
             _seconds = 59;
     }
     
+    private bool TimeUp()
+    {
+        return _minutes <= 0 && _seconds <= 0;
+    }
+
     private IEnumerator UpdateCoroutine()
     {
-        while(!_stop)
+        while(!matchOver)
         {
             foreach(var overlay in _overlays)
             {

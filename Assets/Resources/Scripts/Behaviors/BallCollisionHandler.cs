@@ -10,19 +10,12 @@ public class BallCollisionHandler : NetworkBehaviour
     
     private void Awake()
     {
-        StartCoroutine(this.WaitForCondition(
-            waitUntilTrue: collisionHandler => FindObjectsOfType<GameObject>()
-                .Where(obj => obj.tag == "Player" || obj.tag == "Ball")
-                .All(obj => obj.GetComponent<NetworkIdentity>() != null),
-            whenConditionTrue: () =>
-            {
-                _ballAndPlayers = FindObjectsOfType<GameObject>()
-                    .Where(obj => obj.tag == "Player" || obj.tag == "Ball")
-                    .ToDictionary(obj => obj.GetComponent<NetworkIdentity>().netId);
-                
-                NetworkServer.RegisterHandler(MyMessageTypes.BallCollisionMessage, BallCollisionMessageHandler);
-                NetworkServer.RegisterHandler(MyMessageTypes.BallCaughtMessage, BallCaughtMessageHandler);
-            }));
+        _ballAndPlayers = FindObjectsOfType<GameObject>()
+            .Where(obj => obj.tag == "Player" || obj.tag == "Ball")
+            .ToDictionary(obj => obj.GetComponent<NetworkIdentity>().netId);
+
+        NetworkServer.RegisterHandler(MyMessageTypes.BallCollisionMessage, BallCollisionMessageHandler);
+        NetworkServer.RegisterHandler(MyMessageTypes.BallCaughtMessage, BallCaughtMessageHandler);
     }
 
     private void BallCollisionMessageHandler(NetworkMessage networkMessage)
@@ -60,12 +53,8 @@ public class BallCollisionHandler : NetworkBehaviour
 
                     playerHitCondition.GetOut();
 
-                    ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner);
+                    //ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner);
                 }
-                //else
-                //{
-                //    Debug.LogError("Ball was thrown but no ball thrower found.");
-                //}
             }
         }
 
