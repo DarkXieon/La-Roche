@@ -18,10 +18,12 @@ public class PlayerHoldingState : NetworkBehaviour
 
     [SyncVar]
     private float _timeLeft;
-
-    //[SerializeField] [SyncVar]
-    private Transform _holdingWith;
     
+    private Transform _holdingWith;
+
+    [SerializeField]
+    private Transform _holdingAt;
+
     [SerializeField]
     private float _maxHoldTime = 15f;
 
@@ -50,12 +52,12 @@ public class PlayerHoldingState : NetworkBehaviour
     private void Start()
     {
         _gameOverlay = GetComponent<GameOverlay>();
-        
-        _holdingWith = transform.GetComponentsInChildren<Transform>()
-            .First(trans => trans.name == "CameraHolder");
-            //.First(trans => trans.name == "BallHolder");
-    }
 
+        _holdingWith = transform
+            .GetComponentsInChildren<Transform>()
+            .First(trans => trans.name == "CameraHolder");
+    }
+    
     private void Update()
     {
         if(isLocalPlayer && HoldingBall)
@@ -63,7 +65,7 @@ public class PlayerHoldingState : NetworkBehaviour
             if (_timeLeft > 0)
             {
                 _timeLeft -= Time.deltaTime;
-
+                
                 if (_timeLeft <= _maxHoldTime - MaxRunWithBallTime)
                 {
                     CmdSetOverlayMessage(string.Format("You have {0} more seconds to throw the ball.", Mathf.RoundToInt(_timeLeft)));
@@ -72,21 +74,14 @@ public class PlayerHoldingState : NetworkBehaviour
             else
             {
                 var ball = StopHoldingBall();
-
                 var body = ball.GetComponent<Rigidbody>();
-
-                var randomGenerator = new System.Random();
-
-                var xVel = randomGenerator.Next(-1, 1) * _horisontalAutoTossVelocity;
-
-                var zVel = randomGenerator.Next(-1, 1) * _horisontalAutoTossVelocity;
-
-                var force = new Vector3(xVel, _verticalAutoTossVelocity, zVel);
-
                 var freeze = GetComponent<PlayerFrozenState>();
 
-                body.AddForce(force, ForceMode.VelocityChange);
+                var xVel = Random.Range(-1, 1) * _horisontalAutoTossVelocity;
+                var zVel = Random.Range(-1, 1) * _horisontalAutoTossVelocity;
+                var force = new Vector3(xVel, _verticalAutoTossVelocity, zVel);
 
+                body.AddForce(force, ForceMode.VelocityChange);
                 freeze.FreezeOnTimer(5f);
             }
         }
@@ -108,25 +103,17 @@ public class PlayerHoldingState : NetworkBehaviour
             {
                 CmdStartHoldingBall(ball.GetComponent<NetworkIdentity>(), GetComponent<NetworkIdentity>());
             }
-
-            //CmdStartHoldingBall(ball.GetComponent<NetworkIdentity>(), GetComponent<NetworkIdentity>());
-
+            
             var ballBody = ball.GetComponent<Rigidbody>();
-
             var ballRenderer = ball.GetComponentInChildren<Renderer>();
             
             ballBody.isKinematic = true; //We don't want gravity on the ball while we hold it
-
-            ball.transform.position = HoldingWith.position + /*HoldingWith.forward*/ HoldingWith.right * -2; //sets the ball position
-
-            ball.transform.parent = HoldingWith.transform; //makes the ball a child to the ball container
-
+            ball.GetComponentsInChildren<SphereCollider>().ForEach(collider => collider.enabled = false);
+            ball.transform.position = _holdingAt.position; //sets the ball position
+            ball.transform.parent = _holdingAt.transform; //makes the ball a child to the ball container
             ballRenderer.materials = new Material[] { HeldBallMaterial };
 
-            ball.GetComponentsInChildren<SphereCollider>().ForEach(collider => collider.enabled = false);
-            
             _holdingBall = true; //make sure we know for later we are holding it
-            
             _ball = ball; //set it so it's no longer null
         }
         else
@@ -143,33 +130,17 @@ public class PlayerHoldingState : NetworkBehaviour
 
         if (ball != null)
         {
-            if(isServer)
-            {
-                StopHoldingBall(ball.GetComponent<NetworkIdentity>());
-            }
-            else
-            {
-                CmdStopHoldingBall(ball.GetComponent<NetworkIdentity>());
-            }
-            
             var ballBody = ball.GetComponent<Rigidbody>();
-
             var ballCatchCollider = ball.GetComponentsInChildren<SphereCollider>().First(collider => collider.isTrigger);
-
             var ballRenderer = ball.GetComponentInChildren<Renderer>();
             
             ballBody.isKinematic = false; //make gravity affect it again
-
             ball.transform.parent = null;
-
             ballCatchCollider.enabled = true;
-
             ballRenderer.materials = new Material[] { DefaultBallMaterial };
-
             ball.GetComponentsInChildren<SphereCollider>().ForEach(collider => collider.enabled = true);
 
             _holdingBall = false;
-
             _ball = null;
 
             CmdSetOverlayMessage("");
@@ -186,10 +157,10 @@ public class PlayerHoldingState : NetworkBehaviour
     {
         if (ballIdentity.clientAuthorityOwner != null)
         {
-            Debug.LogError("Started holding ball when someone else already is.");
+            StopHoldingBall(ballIdentity);
         }
 
-        if (!ballIdentity.AssignClientAuthority(clientIdentity.connectionToClient))//GetComponent<NetworkIdentity>().connectionToClient))
+        if (!ballIdentity.AssignClientAuthority(clientIdentity.connectionToClient))
         {
             Debug.LogError("Failed to add client authority.");
         }
@@ -199,21 +170,10 @@ public class PlayerHoldingState : NetworkBehaviour
     private void CmdStartHoldingBall(NetworkIdentity ballIdentity, NetworkIdentity clientIdentity)
     {
         StartHoldingBall(ballIdentity, clientIdentity);
-        //if(ballIdentity.clientAuthorityOwner != null)
-        //{
-        //    Debug.LogError("Started holding ball when someone else already is.");
-        //}
-
-        //if (!ballIdentity.AssignClientAuthority(clientIdentity.connectionToClient))//GetComponent<NetworkIdentity>().connectionToClient))
-        //{
-        //    Debug.LogError("Failed to add client authority.");
-        //}
     }
 
-    private void StopHoldingBall(NetworkIdentity ballIdentity)//GameObject ball)
+    private void StopHoldingBall(NetworkIdentity ballIdentity)
     {
-        //var ballIdentity = ball.GetComponent<NetworkIdentity>();
-
         if (ballIdentity.clientAuthorityOwner == null)
         {
             Debug.LogError("Nobody is holding the ball but it was let go of aparently");
@@ -223,22 +183,6 @@ public class PlayerHoldingState : NetworkBehaviour
         {
             Debug.LogError("Failed to remove client authority.");
         }
-    }
-
-    [Command]
-    private void CmdStopHoldingBall(NetworkIdentity ballIdentity)//GameObject ball)
-    {
-        StopHoldingBall(ballIdentity);
-
-        //if (ballIdentity.clientAuthorityOwner == null)
-        //{
-        //    Debug.LogError("Nobody is holding the ball but it was let go of aparently");
-        //}
-
-        //if (!ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner))
-        //{
-        //    Debug.LogError("Failed to remove client authority.");
-        //}
     }
     
     [Command]

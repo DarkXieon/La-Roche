@@ -18,6 +18,61 @@ namespace Prototype.NetworkLobby
 
         public static new LobbyManager singleton;
 
+        public bool PlayerSpawnsFinished
+        {
+            get
+            {
+                var spawnedPlayers = NetworkServer.objects
+                    .Select(obj => obj.Value.gameObject)
+                    .Where(gameObject => gameObject.tag == "Player");
+
+                var lobbyPlayers = lobbySlots
+                    .Where(slot => slot != null)
+                    .Count();
+
+                var spawnedPlayerCount = spawnedPlayers.Count();
+
+                if(lobbyPlayers == spawnedPlayerCount)
+                {
+                    var playerIdentities = spawnedPlayers
+                        .Select(player => player.GetComponent<NetworkIdentity>());
+                    
+                    bool observerCountsCorrect = playerIdentities
+                        .All(playerIdentity =>
+                        {
+                            var observerCount = playerIdentity != null && playerIdentity.observers != null
+                                ? playerIdentity.observers.Count
+                                : 0;
+                            
+                            return observerCount == spawnedPlayerCount;
+                        });
+
+                    var playerComponentCount = gamePlayerPrefab
+                        .GetComponents<NetworkBehaviour>()
+                        .Count();
+
+                    bool componentCountsCorrect = spawnedPlayers
+                        .All(player => player.GetComponents<NetworkBehaviour>().Count() == playerComponentCount);
+
+                    return observerCountsCorrect && componentCountsCorrect;
+                }
+
+                return false;
+            }
+        }
+
+        public bool AllPlayersJoined
+        {
+            get
+            {
+                int lobbyPlayerCount = lobbySlots
+                    .Where(slot => slot != null)
+                    .Count();
+                
+                return lobbyPlayerCount == numPlayers;
+            }
+        }
+
         public GameObject LobbyFallback;
 
         [Header("Unity UI Lobby")]
@@ -35,8 +90,8 @@ namespace Prototype.NetworkLobby
         public GameObject addPlayerButton;
 
         protected RectTransform currentPanel;
-
-        protected int _gamePlayers;
+        
+        public int _gamePlayers;
         
         public Text statusInfo;
         public Text hostInfo;
@@ -67,6 +122,18 @@ namespace Prototype.NetworkLobby
             showLobbyGUI = false;
 
             _gamePlayers = 0;
+        }
+
+        private void Update()
+        {
+            Debug.Log(PlayerSpawnsFinished);
+        }
+
+        public void RestartManager()
+        {
+            GameObject.Instantiate(LobbyFallback);
+            
+            GameObject.Destroy(gameObject);
         }
 
         public override void OnLobbyClientSceneChanged(NetworkConnection conn)
@@ -120,6 +187,8 @@ namespace Prototype.NetworkLobby
 
                 TurnOffInGameMenu();
 
+                RestartManager();
+
                 //End of non running code
 
                 //topPanel.ToggleVisibility(true);
@@ -170,6 +239,8 @@ namespace Prototype.NetworkLobby
             else if(sceneName == this.lobbyScene)
             {
                 TurnOffInGameMenu();
+                
+                RestartManager();
             }
         }
 
@@ -212,6 +283,8 @@ namespace Prototype.NetworkLobby
             else
             {
                 _isMatchmaking = false;
+                
+                //RestartManager();
             }
         }
 
@@ -259,9 +332,10 @@ namespace Prototype.NetworkLobby
             {
                 StopHost();
             }
-
             
             ChangeTo(mainMenuPanel);
+
+            RestartManager();
         }
 
         public void StopClientClbk()
@@ -276,6 +350,8 @@ namespace Prototype.NetworkLobby
             ChangeTo(mainMenuPanel);
 
             TurnOffInGameMenu();
+
+            RestartManager();
         }
 
         public void StopServerClbk()
@@ -284,6 +360,8 @@ namespace Prototype.NetworkLobby
             ChangeTo(mainMenuPanel);
 
             TurnOffInGameMenu();
+
+            RestartManager();
         }
 
         private void TurnOnInGameMenu()
@@ -319,6 +397,7 @@ namespace Prototype.NetworkLobby
         {
             infoPanel.Display("Kicked by Server", "Close", null);
             netMsg.conn.Disconnect();
+            RestartManager();
         }
         
         public void QuitButtonCallback()
@@ -350,6 +429,7 @@ namespace Prototype.NetworkLobby
             {
                 StopMatchMaker();
                 StopHost();
+                RestartManager();
             }
         }
 
@@ -381,6 +461,8 @@ namespace Prototype.NetworkLobby
             StartCoroutine(this.WaitForCondition(
                 waitUntilTrue: lobbyManager =>
                 {
+                    var playerIdentity = gamePlayer.GetComponent<NetworkIdentity>();
+
                     var lobbyPlayers = lobbyManager.lobbySlots
                         .Where(slot => slot != null)
                         .Count();
@@ -390,12 +472,10 @@ namespace Prototype.NetworkLobby
                         .Where(gameObject => gameObject.tag == "Player")
                         .Count();
 
-                    var playerIdentity = gamePlayer.GetComponent<NetworkIdentity>();
-
                     var observerCount = playerIdentity != null && playerIdentity.observers != null
                         ? playerIdentity.observers.Count
                         : 0;
-                    
+                                      
                     return lobbyPlayers == spawnedPlayerCount && observerCount == spawnedPlayerCount;
                 },
                 whenConditionTrue: () => 
@@ -463,6 +543,7 @@ namespace Prototype.NetworkLobby
             }
 
             NetworkServer.Shutdown();
+            RestartManager();
         }
 
         public override void OnLobbyClientConnect(NetworkConnection conn)
@@ -559,37 +640,16 @@ namespace Prototype.NetworkLobby
 
         public override void OnClientDisconnect(NetworkConnection conn)
         {
-            //try
-            //{
-                base.OnClientDisconnect(conn);
-            //}
-            //catch { }
-            //finally
-            //{
-            //    ChangeTo(mainMenuPanel);
-            //    TurnOffInGameMenu();
-            //}
+            base.OnClientDisconnect(conn);
 
-            GameObject.Instantiate(LobbyFallback);
-            GameObject.Destroy(this.gameObject);
+            RestartManager();
         }
 
         public override void OnClientError(NetworkConnection conn, int errorCode)
         {
-            //try
-            //{
-                base.OnClientError(conn, errorCode);
-            //}
-            //catch { }
-            //finally
-            //{
-            //    ChangeTo(mainMenuPanel);
-            //    TurnOffInGameMenu();
-            //    infoPanel.Display("Cient error : " + (errorCode == 6 ? "timeout" : errorCode.ToString()), "Close", null);
-            //}
+            base.OnClientError(conn, errorCode);
 
-            GameObject.Instantiate(LobbyFallback);
-            GameObject.Destroy(this.gameObject);
+            RestartManager();
         } 
     }
 }

@@ -40,9 +40,10 @@ public class BallCollisionHandler : NetworkBehaviour
 
             if (_ballAndPlayers.TryGetValue(message.CollidedWithId, out playerHit)) //checks if it was a player that was hit
             {
-                if (ballThrownState.ThrownBy != null) //checks to make sure the thrown by value isn't null, if it is there is an issue
+                if (ballThrownState.ThrownBy != null && ballThrownState.ThrownBy.GetComponent<NetworkIdentity>().netId != playerHit.GetComponent<NetworkIdentity>().netId) //checks to make sure the thrown by value isn't null, if it is there is an issue
                 {
                     var thrownBy = ballThrownState.ThrownBy;
+                    var ballIdentity = ball.GetComponent<NetworkIdentity>();
 
                     var throwerCondition = thrownBy.GetComponent<PlayerConditionState>();
                     var playerHitCondition = playerHit.GetComponent<PlayerConditionState>();
@@ -58,11 +59,13 @@ public class BallCollisionHandler : NetworkBehaviour
                     }
 
                     playerHitCondition.GetOut();
+
+                    ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner);
                 }
-                else
-                {
-                    Debug.LogError("Ball was thrown but no ball thrower found.");
-                }
+                //else
+                //{
+                //    Debug.LogError("Ball was thrown but no ball thrower found.");
+                //}
             }
         }
 

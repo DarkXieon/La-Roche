@@ -8,11 +8,7 @@ public class AimBall : BaseBehavior
     public float MaxAimRotation;
 
     public GameObject AimingWith;
-
-    //public GameObject Placeholder;
-
-    //private Camera _viewCamera;
-
+    
     private PlayerHoldingState _holdingState;
 
     protected override void Start()
@@ -66,26 +62,9 @@ public class AimBall : BaseBehavior
                 rotation = rotation > 180 //The game rotation gets converted in an possible area of -180 to 180 instead of 0 to 360
                     ? aimingWithLocalRotation.z - 360
                     : rotation;
-
-                //aimingWith.localRotation = Quaternion.Euler(aimingWithLocalRotation.z, rotation, aimingWithLocalRotation.z); //sets the rotation
-
-                //CmdUpdateRotation(aimingWith.gameObject, _holdingState.HoldingWith.gameObject, Quaternion.Euler(aimingWithLocalRotation.x, aimingWithLocalRotation.y, rotation));
-
+                
                 aimingWith.localRotation = Quaternion.Euler(aimingWithLocalRotation.x, aimingWithLocalRotation.y, rotation); //sets the rotation
-
-                //_holdingState.HoldingWith.localRotation = aimingWith.localRotation; //sets the rotation
-
-                //aimingWith.localRotation = Quaternion.Euler(rotation, aimingWithLocalRotation.y, aimingWithLocalRotation.z); //sets the rotation
             }
         }
-    }
-
-    [Command]
-    private void CmdUpdateRotation(GameObject aimingWith, GameObject ballContainer, Quaternion rotation)
-    {
-
-        aimingWith.transform.localRotation = rotation; //sets the rotation
-
-        ballContainer.transform.localRotation = rotation;
     }
 }
