@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 using UnityEngine.Networking;
 
 public class ThrowBall : BaseBehavior
@@ -44,16 +45,41 @@ public class ThrowBall : BaseBehavior
             else if (!_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall && _currentHoldTime > 0f) //if the throw button is not pressed, the player is holding the ball, and the player WAS holding the throw button
             {
                 var ball = _holdingState.StopHoldingBall();
-                var ballBody = ball.GetComponent<Rigidbody>();
-                var ballState = ball.GetComponent<BallThrownState>();
 
-                var forceAxis = transform.GetComponentInChildren<Camera>().transform.forward;
-                var holdTimeMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f); //this changes power based on hold time
-                var force = holdTimeMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;
-                var forceOnAxis = forceAxis * force;
+                //CmdThrowBallAction();
 
-                ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
-                ballState.BallThrownBy(gameObject);
+                //this.WaitForCondition(obj => ball.GetComponent<NetworkIdentity>().hasAuthority, () =>
+                //{
+                //    var ballBody = ball.GetComponent<Rigidbody>();
+                //    var ballState = ball.GetComponent<BallThrownState>();
+
+                //    var forceAxis = transform.GetComponentInChildren<Camera>().transform.forward;
+                //    var holdTimeMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f); //this changes power based on hold time
+                //    var force = holdTimeMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;
+                //    var forceOnAxis = forceAxis * force;
+
+                //    ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
+                //    ballState.BallThrownBy(gameObject);
+
+                //    CmdStartThrowAnimation();
+                //    CmdSetPowerOverlay(0f);
+
+                //    _currentHoldTime = 0f;
+                //});
+
+                ThrowBallAction(ball);
+                CmdSetBallThrown(ball);
+
+                //var ballBody = ball.GetComponent<Rigidbody>();
+                //var ballState = ball.GetComponent<BallThrownState>();
+
+                //var forceAxis = transform.GetComponentInChildren<Camera>().transform.forward;
+                //var holdTimeMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f); //this changes power based on hold time
+                //var force = holdTimeMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;
+                //var forceOnAxis = forceAxis * force;
+
+                //ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
+                //ballState.BallThrownBy(gameObject);
 
                 CmdStartThrowAnimation();
                 CmdSetPowerOverlay(0f);
@@ -63,6 +89,46 @@ public class ThrowBall : BaseBehavior
         }
     }
     
+    private void ThrowBallAction(GameObject ball)//NetworkInstanceId networkId)
+    {
+        //var ball = NetworkServer.objects[networkId];
+        var ballBody = ball.GetComponent<Rigidbody>();
+        var ballState = ball.GetComponent<BallThrownState>();
+
+        var forceAxis = transform.GetComponentInChildren<Camera>().transform.forward;
+        var holdTimeMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f); //this changes power based on hold time
+        var force = holdTimeMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;
+        var forceOnAxis = forceAxis * force;
+
+        ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
+        ballState.BallThrownBy(gameObject);
+
+        //CmdStartThrowAnimation();
+        //CmdSetPowerOverlay(0f);
+
+        _currentHoldTime = 0f;
+    }
+
+    [Command]
+    private void CmdSetBallThrown(GameObject ball)//(NetworkInstanceId networkId)
+    {
+        ball.GetComponent<BallThrownState>().BallThrownBy(gameObject);
+    }
+
+    //[Command]
+    //private void CmdThrowBallAction(GameObject ball)//(NetworkInstanceId networkId)
+    //{
+    //    //RpcThrowBallAction(ball);
+
+    //    ThrowBallAction(ball);
+    //}
+
+    [ClientRpc]
+    private void RpcThrowBallAction(GameObject ball)//(NetworkInstanceId networkId)
+    {
+        ThrowBallAction(ball);
+    }
+
     [Command]
     private void CmdSetPowerOverlay(float percentage)
     {

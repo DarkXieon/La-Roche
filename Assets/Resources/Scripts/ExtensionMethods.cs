@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
+using UnityEngine.Networking;
 
 public static partial class ExtensionMethods
 {
@@ -12,7 +13,13 @@ public static partial class ExtensionMethods
         enumerable.ToList().ForEach(action);
     }
 
-    public static IEnumerator WaitForCondition<T>(this T waiting, Predicate<T> waitUntilTrue, Action whenConditionTrue)
+    public static Coroutine WaitForCondition<T>(this T waiting, Predicate<T> waitUntilTrue, Action whenConditionTrue)
+        where T : MonoBehaviour
+    {
+        return waiting.StartCoroutine(WaitForConditionEnumerator(waiting, waitUntilTrue, whenConditionTrue));
+    }
+
+    public static IEnumerator WaitForConditionEnumerator<T>(this T waiting, Predicate<T> waitUntilTrue, Action whenConditionTrue)
     {
         while (!waitUntilTrue.Invoke(waiting))
         {

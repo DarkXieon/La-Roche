@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-
+using Prototype.NetworkLobby;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -22,7 +22,7 @@ public class PlayerHoldingState : NetworkBehaviour
     private Transform _holdingWith;
 
     [SerializeField]
-    private Transform _holdingAt;
+    public Transform _holdingAt;
 
     [SerializeField]
     private float _maxHoldTime = 15f;
@@ -103,15 +103,35 @@ public class PlayerHoldingState : NetworkBehaviour
             {
                 CmdStartHoldingBall(ball.GetComponent<NetworkIdentity>(), GetComponent<NetworkIdentity>());
             }
-            
-            var ballBody = ball.GetComponent<Rigidbody>();
-            var ballRenderer = ball.GetComponentInChildren<Renderer>();
-            
-            ballBody.isKinematic = true; //We don't want gravity on the ball while we hold it
-            ball.GetComponentsInChildren<SphereCollider>().ForEach(collider => collider.enabled = false);
-            ball.transform.position = _holdingAt.position; //sets the ball position
-            ball.transform.parent = _holdingAt.transform; //makes the ball a child to the ball container
-            ballRenderer.materials = new Material[] { HeldBallMaterial };
+
+            Debug.Log("Now it should DEFINATLY be sending updates");
+
+            this.WaitForCondition(holding => ball.GetComponent<NetworkIdentity>().hasAuthority, () =>
+            {
+                Debug.Log("Now it should DEFINATLY be sending updates");
+                
+                var ballBody = ball.GetComponent<Rigidbody>();
+                var ballRenderer = ball.GetComponentInChildren<Renderer>();
+
+                //networked.canSendNetworkMovement = false;
+                //networked.StartSendingUpdatesTest();
+                ballBody.isKinematic = true; //We don't want gravity on the ball while we hold it
+                ball.transform.position = _holdingAt.position; //sets the ball position
+                ball.transform.parent = _holdingAt.transform; //makes the ball a child to the ball container
+                ball.GetComponentsInChildren<SphereCollider>().ForEach(collider => collider.enabled = false);
+                ballRenderer.materials = new Material[] { HeldBallMaterial };
+                //networked.isLerpingPosition = false;
+                //networked.isLerpingRotation = false;
+                //networked.realPosition = _holdingAt.position;
+                //networked.realRotation = ball.transform.rotation;
+
+                //_holdingBall = true; //make sure we know for later we are holding it
+                //_ball = ball; //set it so it's no longer null
+            });
+
+            //this.WaitForCondition(holding => holding.GetComponent<NetworkPlayer>().hasAuthority, () => CmdStartAuthority(netId));
+
+            //CmdStartAuthority(netId);
 
             _holdingBall = true; //make sure we know for later we are holding it
             _ball = ball; //set it so it's no longer null
@@ -121,6 +141,36 @@ public class PlayerHoldingState : NetworkBehaviour
             Debug.LogError("Object not tagged as the Ball please tag the object correctly");
         }
     }
+
+    //public void StartAuthority(NetworkInstanceId playerId)
+    //{
+    //    var player = FindObjectsOfType<NetworkIdentity>().Single(id => id.netId == playerId); //NetworkServer.FindLocalObject(playerId);
+    //    var ball = FindObjectsOfType<NetworkIdentity>().Single(id => id.tag == "Ball");
+    //    var holdingState = player.GetComponent<PlayerHoldingState>();
+    //    var ballBody = ball.GetComponent<Rigidbody>();
+    //    var ballRenderer = ball.GetComponentInChildren<Renderer>();
+    //    var networkedBall = ball.GetComponent<NetworkPlayer>();
+
+    //    ballBody.isKinematic = true; //We don't want gravity on the ball while we hold it
+    //    ball.transform.position = holdingState._holdingAt.position; //sets the ball position
+    //    ball.transform.parent = holdingState._holdingAt.transform; //makes the ball a child to the ball container
+    //    ball.GetComponentsInChildren<SphereCollider>().ForEach(collider => collider.enabled = false);
+    //    ballRenderer.materials = new Material[] { holdingState.HeldBallMaterial };
+    //}
+
+    //[Command]
+    //public void CmdStartAuthority(NetworkInstanceId playerId)
+    //{
+    //    StartAuthority(playerId);
+
+    //    RpcStartAuthority(playerId);
+    //}
+
+    //[ClientRpc]
+    //public void RpcStartAuthority(NetworkInstanceId playerId)
+    //{
+    //    StartAuthority(playerId);
+    //}
 
     //When you call this method, keep in mind that it ASSUMES you are doing something else with the ball, if nothing else is done
     //The ball will simply just drop to the ground
@@ -133,7 +183,7 @@ public class PlayerHoldingState : NetworkBehaviour
             var ballBody = ball.GetComponent<Rigidbody>();
             var ballCatchCollider = ball.GetComponentsInChildren<SphereCollider>().First(collider => collider.isTrigger);
             var ballRenderer = ball.GetComponentInChildren<Renderer>();
-            
+
             ballBody.isKinematic = false; //make gravity affect it again
             ball.transform.parent = null;
             ballCatchCollider.enabled = true;
@@ -144,6 +194,8 @@ public class PlayerHoldingState : NetworkBehaviour
             _ball = null;
 
             CmdSetOverlayMessage("");
+
+            //CmdStopAuthority();
         }
         else
         {
@@ -152,7 +204,42 @@ public class PlayerHoldingState : NetworkBehaviour
 
         return ball;
     }
-    
+
+    //public void StopAuthority()
+    //{
+    //    var ball = FindObjectsOfType<NetworkIdentity>().Single(id => id.tag == "Ball");
+    //    var ballBody = ball.GetComponent<Rigidbody>();
+    //    var ballCatchCollider = ball.GetComponentsInChildren<SphereCollider>().First(collider => collider.isTrigger);
+    //    var ballRenderer = ball.GetComponentInChildren<Renderer>();
+
+    //    ballBody.isKinematic = false; //make gravity affect it again
+    //    ball.transform.parent = null;
+    //    ballCatchCollider.enabled = true;
+    //    ballRenderer.materials = new Material[] { DefaultBallMaterial };
+    //    ball.GetComponentsInChildren<SphereCollider>().ForEach(collider => collider.enabled = true);
+
+    //    _holdingBall = false;
+    //    _ball = null;
+
+    //    //CmdSetOverlayMessage("");
+    //}
+
+    //[Command]
+    //public void CmdStopAuthority()
+    //{
+    //    CmdSetOverlayMessage("");
+
+    //    StopAuthority();
+
+    //    RpcStopAuthority();
+    //}
+
+    //[ClientRpc]
+    //public void RpcStopAuthority()
+    //{
+    //    StopAuthority();
+    //}
+
     private void StartHoldingBall(NetworkIdentity ballIdentity, NetworkIdentity clientIdentity)
     {
         if (ballIdentity.clientAuthorityOwner != null)
@@ -172,6 +259,7 @@ public class PlayerHoldingState : NetworkBehaviour
         StartHoldingBall(ballIdentity, clientIdentity);
     }
 
+    [Server]
     private void StopHoldingBall(NetworkIdentity ballIdentity)
     {
         if (ballIdentity.clientAuthorityOwner == null)
@@ -183,8 +271,16 @@ public class PlayerHoldingState : NetworkBehaviour
         {
             Debug.LogError("Failed to remove client authority.");
         }
+
+        //RpcStopHoldingBall();
     }
-    
+
+    //[ClientRpc]
+    //private void RpcStopHoldingBall()
+    //{
+    //    FindObjectsOfType<NetworkPlayer>().First(player => player.tag == "Ball").canSendNetworkMovement = false;
+    //}
+
     [Command]
     private void CmdSetOverlayMessage(string message)
     {

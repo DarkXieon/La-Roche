@@ -927,7 +927,7 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1487002927382030}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 18f443282d007b347bdfb46e4c263d75, type: 3}
   m_Controller: {fileID: 9100000, guid: a88dad1659ef3774bb54d88147704c90, type: 2}
   m_CullingMode: 1
@@ -1289,9 +1289,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7f190f2591d9c14996aa82172ad56e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Ready: 0
   playerID: 
-  canSendNetworkMovement: 0
-  networkSendRate: 11
+  networkSendRate: 10
   timeBetweenMovementStart: 0
   timeBetweenMovementEnd: 0
   isLerpingPosition: 0
@@ -1302,6 +1302,14 @@ MonoBehaviour:
   lastRealRotation: {x: 0, y: 0, z: 0, w: 0}
   timeStartedLerping: 0
   timeToLerp: 0
+  isLerpingPositionBall: 0
+  isLerpingRotationBall: 0
+  realPositionBall: {x: 0, y: 0, z: 0}
+  realRotationBall: {x: 0, y: 0, z: 0, w: 0}
+  lastRealPositionBall: {x: 0, y: 0, z: 0}
+  lastRealRotationBall: {x: 0, y: 0, z: 0, w: 0}
+  timeStartedLerpingBall: 0
+  timeToLerpBall: 0
 --- !u!114 &114546635478211480
 MonoBehaviour:
   m_ObjectHideFlags: 1

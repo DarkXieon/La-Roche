@@ -17,6 +17,10 @@ public class GameTimer : WinningConditions
     {
         base.Awake();
 
+        _timeLeft = 15f * 60f;
+
+        SetTime();
+
         StartCoroutine(UpdateCoroutine());
     }
 
@@ -38,7 +42,7 @@ public class GameTimer : WinningConditions
     
     private void SetTime()
     {
-        _timeLeft = Mathf.Min(0f, _timeLeft - Time.deltaTime);
+        _timeLeft = Mathf.Max(0f, _timeLeft - Time.deltaTime);
         _minutes = Mathf.Floor(_timeLeft / 60);
         _seconds = _timeLeft % 60;
         if (_seconds > 59)

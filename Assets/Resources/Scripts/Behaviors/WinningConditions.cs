@@ -26,6 +26,8 @@ public class WinningConditions : NetworkBehaviour
 
         if(!matchOver && OnePlayerLeft(out winner))
         {
+            Debug.Log("One player left");
+
             DisplayWinners(winner);
         }
     }

@@ -18,13 +18,27 @@ namespace Prototype.NetworkLobby
 
         public static new LobbyManager singleton;
 
+        public bool BallFullyReady
+        {
+            get
+            {
+                int ballComponentCount = spawnPrefabs[0]
+                    .GetComponents<NetworkBehaviour>()
+                    .Count();
+
+                var ball = NetworkServer.objects.Values.SingleOrDefault(obj => obj.tag == "Ball");
+
+                return ball.GetComponents<NetworkBehaviour>().Count() == ballComponentCount;
+            }
+        }
+
         public bool PlayersFullyJoined
         {
             get
             {
                 var spawnedPlayers = NetworkServer.objects
                     .Select(obj => obj.Value.gameObject)
-                    .Where(gameObject => gameObject.tag == "Player");
+                    .Where(obj => obj.tag == "Player");// || obj.tag == "Ball");
 
                 var lobbyPlayers = lobbySlots
                     .Where(slot => slot != null)
@@ -32,7 +46,10 @@ namespace Prototype.NetworkLobby
 
                 var spawnedPlayerCount = spawnedPlayers.Count();
 
-                if(lobbyPlayers == spawnedPlayerCount)
+                Debug.Log(lobbyPlayers);
+                Debug.Log(spawnedPlayerCount);
+
+                if(lobbyPlayers/* + 1*/ == spawnedPlayerCount)
                 {
                     var playerIdentities = spawnedPlayers
                         .Select(player => player.GetComponent<NetworkIdentity>());
@@ -43,18 +60,45 @@ namespace Prototype.NetworkLobby
                             var observerCount = playerIdentity != null && playerIdentity.observers != null
                                 ? playerIdentity.observers.Count
                                 : 0;
+
+                            Debug.Log(observerCount);
                             
-                            return observerCount == spawnedPlayerCount;
+                            return observerCount/* + 1*/ == spawnedPlayerCount;
                         });
 
                     var playerComponentCount = gamePlayerPrefab
                         .GetComponents<NetworkBehaviour>()
                         .Count();
 
-                    bool componentCountsCorrect = spawnedPlayers
-                        .All(player => player.GetComponents<NetworkBehaviour>().Count() == playerComponentCount);
+                    var ballComponentCount = spawnPrefabs[0]
+                        .GetComponents<NetworkBehaviour>()
+                        .Count();
 
-                    return observerCountsCorrect && componentCountsCorrect;
+                    bool componentCountsCorrect = spawnedPlayers.All(player => player.GetComponents<NetworkBehaviour>().Count() == playerComponentCount);
+                    //{
+                    //    if (player.tag == "Player")
+                    //    {
+                    //        return player.GetComponents<NetworkBehaviour>().Count() == playerComponentCount;
+                    //    }
+                    //    else
+                    //    {
+                    //        return player.GetComponents<NetworkBehaviour>().Count() == ballComponentCount;
+                    //    }
+                    //});
+
+                    //if (observerCountsCorrect && componentCountsCorrect)
+                    //{
+                    //    Debug.Log(observerCountsCorrect && componentCountsCorrect);
+                    //    int i = 0;
+                    //}
+
+                    //var server = NetworkServer.objects
+                    //    .Select(obj => obj.Value.gameObject.GetComponent<NetworkServerRelay>())
+                    //    .Where(obj => obj != null)
+                    //    .Count() == 1;
+
+
+                    return observerCountsCorrect && componentCountsCorrect;// && server;
                 }
 
                 return false;
@@ -108,12 +152,12 @@ namespace Prototype.NetworkLobby
             showLobbyGUI = false;
         }
         
-        public void RestartManager()
-        {
-            GameObject.Instantiate(LobbyFallback);
+        //public void RestartManager()
+        //{
+        //    GameObject.Instantiate(LobbyFallback);
             
-            GameObject.Destroy(gameObject);
-        }
+        //    GameObject.Destroy(gameObject);
+        //}
 
         public override void OnLobbyClientSceneChanged(NetworkConnection conn)
         {
@@ -132,7 +176,7 @@ namespace Prototype.NetworkLobby
 
                 TurnOffInGameMenu();
 
-                //RestartManager();
+                //////RestartManager();
             }
             else
             {
@@ -142,6 +186,13 @@ namespace Prototype.NetworkLobby
 
                 TurnOnInGameMenu();
             }
+        }
+
+        private IEnumerator Wait(Action todo)
+        {
+            yield return new WaitForSecondsRealtime(1f);
+
+            todo.Invoke();
         }
 
         public override void OnLobbyServerSceneChanged(string sceneName)
@@ -155,29 +206,69 @@ namespace Prototype.NetworkLobby
 
                 StartCoroutine(WaitForPlayersToJoin(() =>
                 {
+                    //NetworkServer.objects.First(obj => obj.Value.tag == "Ball").Value.AssignClientAuthority(NetworkServer.objects.First(obj => obj.Value.tag == "Player").Value.GetComponent<NetworkIdentity>().connectionToClient);
+
+                    NetworkPlayer.InitializeServerPlayers();
+
                     GameObject toSpawn = Instantiate(spawnPrefabs[1]);
                     NetworkServer.Spawn(toSpawn);
 
                     GameObject toSpawn2 = Instantiate(spawnPrefabs[2]);
                     NetworkServer.Spawn(toSpawn2);
-                }));
 
+                    //Debug.Log("Ball is " + spawned.GetComponent<NetworkPlayer>().Ready);
+
+                    var players = NetworkServer.objects
+                        .Select(obj => obj.Value.gameObject)
+                        .Where(obj => obj.tag == "Player")// || obj.tag == "Ball")
+                        .ToList();
+                    
+                    //this.WaitForCondition(
+                    //    waitUntilTrue: lobby =>
+                    //    {
+                    //        //Debug.Log("Ball is " + spawned.GetComponent<NetworkPlayer>().Ready);
+
+                    //        bool all = NetworkServer.objects
+                    //            .Select(obj => obj.Value.gameObject)
+                    //            .Where(obj => obj.tag == "Player")// || obj.tag == "Ball")
+                    //            .All(obj => obj.GetComponent<NetworkPlayer>().Ready);
+
+                    //        Debug.Log("WaitForCondition is returning " + all);
+
+                    //        return all;
+                    //    },
+                    //    whenConditionTrue: () =>
+                    //    {
+                    //        var sendTo = players
+                    //            .Select(obj => obj.GetComponent<NetworkIdentity>())
+                    //            .ToList();
+
+                    //        //sendTo.ForEach(obj => obj.clientAuthorityOwner.Send(MyMessageTypes.PlayerFullyLoaded, new PlayersFullyLoadedMessage() { /*PlayerName = obj.name*/ }));
+
+                    //        NetworkServer.SendToAll(MyMessageTypes.PlayerFullyLoaded, new PlayersFullyLoadedMessage());
+
+                    //        Debug.Log("Sent Message to " + sendTo.Count + " players");
+                    //    });
+                }));
+                
                 TurnOnInGameMenu();
             }
             else if(sceneName == this.lobbyScene)
             {
                 TurnOffInGameMenu();
                 
-                //RestartManager();
+                //////RestartManager();
             }
         }
 
-        private IEnumerator WaitForPlayersToJoin(Action todo)
+        public static IEnumerator WaitForPlayersToJoin(Action todo)
         {
-            while(!PlayersFullyJoined)
+            while(!LobbyManager.singleton.PlayersFullyJoined || !LobbyManager.singleton.BallFullyReady)
             {
                 yield return null;
             }
+            
+            yield return new WaitForSecondsRealtime(.3f);
 
             Debug.Log("Spawning. . .");
 
@@ -210,7 +301,7 @@ namespace Prototype.NetworkLobby
 
                 backDelegate -= SimpleBackClbk;
 
-                //RestartManager();
+                //////RestartManager();
             }
         }
 
@@ -263,7 +354,7 @@ namespace Prototype.NetworkLobby
 
             TurnOffInGameMenu();
 
-            RestartManager();
+            ////RestartManager();
         }
 
         public void StopClientClbk()
@@ -279,7 +370,7 @@ namespace Prototype.NetworkLobby
 
             TurnOffInGameMenu();
 
-            RestartManager();
+            ////RestartManager();
         }
 
         public void StopServerClbk()
@@ -289,7 +380,7 @@ namespace Prototype.NetworkLobby
 
             TurnOffInGameMenu();
 
-            RestartManager();
+            ////RestartManager();
         }
 
         private void TurnOnInGameMenu()
@@ -325,7 +416,7 @@ namespace Prototype.NetworkLobby
         {
             infoPanel.Display("Kicked by Server", "Close", null);
             netMsg.conn.Disconnect();
-            RestartManager();
+            ////RestartManager();
         }
         
         public void QuitButtonCallback()
@@ -357,7 +448,7 @@ namespace Prototype.NetworkLobby
             {
                 StopMatchMaker();
                 StopHost();
-                RestartManager();
+                ////RestartManager();
             }
         }
 
@@ -378,38 +469,17 @@ namespace Prototype.NetworkLobby
         public override bool OnLobbyServerSceneLoadedForPlayer(GameObject lobbyPlayer, GameObject gamePlayer)
         {
             base.OnLobbyServerSceneLoadedForPlayer(lobbyPlayer, gamePlayer);
-            
+
             var stats = gamePlayer.GetComponent<PlayerStats>();
             var lobbyPlayerComponent = lobbyPlayer.GetComponent<LobbyPlayer>();
 
             stats.PlayerName = lobbyPlayerComponent.nameInput.text;
-
-            StartCoroutine(WaitForPlayersToJoin(() => stats.PlayerColor = lobbyPlayerComponent.playerColor));
-
-            //waitUntilTrue: lobbyManager =>
-            //{
-            //    var playerIdentity = gamePlayer.GetComponent<NetworkIdentity>();
-
-            //    var lobbyPlayers = lobbyManager.lobbySlots
-            //        .Where(slot => slot != null)
-            //        .Count();
-
-            //    var spawnedPlayerCount = NetworkServer.objects
-            //        .Select(obj => obj.Value.gameObject)
-            //        .Where(gameObject => gameObject.tag == "Player")
-            //        .Count();
-
-            //    var observerCount = playerIdentity != null && playerIdentity.observers != null
-            //        ? playerIdentity.observers.Count
-            //        : 0;
-
-            //    return lobbyPlayers == spawnedPlayerCount && observerCount == spawnedPlayerCount;
-            //},
-            //whenConditionTrue: () => 
-            //{
-            //stats.PlayerColor = lobbyPlayerComponent.playerColor;
-            //}));
-
+            
+            StartCoroutine(WaitForPlayersToJoin(() =>
+            {
+                stats.PlayerColor = lobbyPlayerComponent.playerColor;
+            }));
+            
             return true;
         }
         
@@ -470,7 +540,7 @@ namespace Prototype.NetworkLobby
             }
 
             NetworkServer.Shutdown();
-            RestartManager();
+            ////RestartManager();
         }
 
         public override void OnLobbyClientConnect(NetworkConnection conn)
@@ -479,7 +549,7 @@ namespace Prototype.NetworkLobby
         }
 
         // --- Countdown management
-
+        
         public override void OnLobbyServerPlayersReady()
         {
 			bool allready = true;
@@ -569,14 +639,14 @@ namespace Prototype.NetworkLobby
         {
             base.OnClientDisconnect(conn);
 
-            RestartManager();
+            ////RestartManager();
         }
 
         public override void OnClientError(NetworkConnection conn, int errorCode)
         {
             base.OnClientError(conn, errorCode);
 
-            RestartManager();
+            ////RestartManager();
         } 
     }
 }

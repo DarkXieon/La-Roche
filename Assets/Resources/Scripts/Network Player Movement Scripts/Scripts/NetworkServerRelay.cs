@@ -1,27 +1,33 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.Networking.NetworkSystem;
+﻿using UnityEngine.Networking;
 
 public class NetworkServerRelay : NetworkMessageHandler
 {
-    private void Start()
-    {
-        if(isServer)
-        {
-            RegisterNetworkMessages();
-        }
-    }
+    //private void Awake()
+    //{
+    //    if (isServer)
+    //    {
+    //        RegisterNetworkMessages();
+    //    }
+    //}
 
-    private void RegisterNetworkMessages()
-    {
-        NetworkServer.RegisterHandler(movement_msg, OnReceivePlayerMovementMessage);
-    }
+    //public void Initialize()
+    //{
+    //    RegisterNetworkMessages();
+    //}
 
-    private void OnReceivePlayerMovementMessage(NetworkMessage _message)
-    {
-        PlayerMovementMessage _msg = _message.ReadMessage<PlayerMovementMessage>();
-        NetworkServer.SendToAll(movement_msg, _msg);
-    }
+    //private void RegisterNetworkMessages()
+    //{
+    //    NetworkServer.RegisterHandler(movement_msg, OnReceivePlayerMovementMessage);
+    //}
+
+    //public static void RegisterNetworkMessages()
+    //{
+    //    NetworkServer.RegisterHandler(movement_msg, OnReceivePlayerMovementMessage);
+    //}
+
+    //private static void OnReceivePlayerMovementMessage(NetworkMessage _message)
+    //{
+    //    PlayerMovementMessage _msg = _message.ReadMessage<PlayerMovementMessage>();
+    //    NetworkServer.SendToAll(movement_msg, _msg);
+    //}
 }
