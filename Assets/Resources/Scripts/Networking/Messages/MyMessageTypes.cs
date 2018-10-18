@@ -6,6 +6,7 @@
     public const short BallMovedOnServer = 1006;
     public const short BallThrown = 1007;
     public const short PlayerConditionChanged = 1008;
+    public const short PlayerFullyLoaded = 1009;
 
 
     public const short BallCollisionMessage = 1050;

@@ -37,7 +37,7 @@ public class LobbyPlayerList : MonoBehaviour
         //sometime to child being assigned before layout was enabled/init, leading to broken layouting)
             
         if(_layout)
-            _layout.childAlignment = Time.frameCount%2 == 0 ? TextAnchor.UpperCenter : TextAnchor.UpperLeft;
+            _layout.childAlignment = Time.frameCount % 2 == 0 ? TextAnchor.UpperCenter : TextAnchor.UpperLeft;
     }
 
     public void AddPlayer(LobbyPlayer player)

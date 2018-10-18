@@ -10,19 +10,12 @@ public class BallCollisionHandler : NetworkBehaviour
     
     private void Awake()
     {
-        StartCoroutine(this.WaitForCondition(
-            waitUntilTrue: collisionHandler => FindObjectsOfType<GameObject>()
-                .Where(obj => obj.tag == "Player" || obj.tag == "Ball")
-                .All(obj => obj.GetComponent<NetworkIdentity>() != null),
-            whenConditionTrue: () =>
-            {
-                _ballAndPlayers = FindObjectsOfType<GameObject>()
-                    .Where(obj => obj.tag == "Player" || obj.tag == "Ball")
-                    .ToDictionary(obj => obj.GetComponent<NetworkIdentity>().netId);
-                
-                NetworkServer.RegisterHandler(MyMessageTypes.BallCollisionMessage, BallCollisionMessageHandler);
-                NetworkServer.RegisterHandler(MyMessageTypes.BallCaughtMessage, BallCaughtMessageHandler);
-            }));
+        _ballAndPlayers = FindObjectsOfType<GameObject>()
+            .Where(obj => obj.tag == "Player" || obj.tag == "Ball")
+            .ToDictionary(obj => obj.GetComponent<NetworkIdentity>().netId);
+
+        NetworkServer.RegisterHandler(MyMessageTypes.BallCollisionMessage, BallCollisionMessageHandler);
+        NetworkServer.RegisterHandler(MyMessageTypes.BallCaughtMessage, BallCaughtMessageHandler);
     }
 
     private void BallCollisionMessageHandler(NetworkMessage networkMessage)
@@ -40,9 +33,10 @@ public class BallCollisionHandler : NetworkBehaviour
 
             if (_ballAndPlayers.TryGetValue(message.CollidedWithId, out playerHit)) //checks if it was a player that was hit
             {
-                if (ballThrownState.ThrownBy != null) //checks to make sure the thrown by value isn't null, if it is there is an issue
+                if (ballThrownState.ThrownBy != null && ballThrownState.ThrownBy.GetComponent<NetworkIdentity>().netId != playerHit.GetComponent<NetworkIdentity>().netId) //checks to make sure the thrown by value isn't null, if it is there is an issue
                 {
                     var thrownBy = ballThrownState.ThrownBy;
+                    var ballIdentity = ball.GetComponent<NetworkIdentity>();
 
                     var throwerCondition = thrownBy.GetComponent<PlayerConditionState>();
                     var playerHitCondition = playerHit.GetComponent<PlayerConditionState>();
@@ -58,10 +52,8 @@ public class BallCollisionHandler : NetworkBehaviour
                     }
 
                     playerHitCondition.GetOut();
-                }
-                else
-                {
-                    Debug.LogError("Ball was thrown but no ball thrower found.");
+
+                    //ballIdentity.RemoveClientAuthority(ballIdentity.clientAuthorityOwner);
                 }
             }
         }

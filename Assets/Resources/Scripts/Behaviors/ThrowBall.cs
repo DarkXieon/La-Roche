@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 using UnityEngine.Networking;
 
 public class ThrowBall : BaseBehavior
@@ -26,72 +27,107 @@ public class ThrowBall : BaseBehavior
 
     private void Update()
     {
-        var time = Time.time;
-        bool _isServer = isServer;
-        bool _isClient = isClient;
-        bool _isLocalPlayer = isLocalPlayer;
-
         if(isLocalPlayer)
         {
             if (_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall) //if the throw button is pressed and the player is holding the ball...
             {
+                if(_currentHoldTime == 0f)
+                {
+                    CmdStartAimAnimation();
+
+                    _audioController.PlayAudio(AudioClips.PlayerThrowV1);
+                }
+
                 _currentHoldTime = _inputState.GetButtonHoldTime(Buttons.THROW);
 
                 CmdSetPowerOverlay(Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f));
-
-                CmdStartAimAnimation();
-
-                _audioController.PlayAudio(AudioClips.PlayerThrowV1);
             }
             else if (!_inputState.IsPressed(Buttons.THROW) && _holdingState.HoldingBall && _currentHoldTime > 0f) //if the throw button is not pressed, the player is holding the ball, and the player WAS holding the throw button
             {
                 var ball = _holdingState.StopHoldingBall();
 
-                var forceAxis = transform.GetComponentInChildren<Camera>().transform.forward;
+                //CmdThrowBallAction();
 
-                CmdThrowBall(ball, forceAxis);
-                
+                //this.WaitForCondition(obj => ball.GetComponent<NetworkIdentity>().hasAuthority, () =>
+                //{
+                //    var ballBody = ball.GetComponent<Rigidbody>();
+                //    var ballState = ball.GetComponent<BallThrownState>();
+
+                //    var forceAxis = transform.GetComponentInChildren<Camera>().transform.forward;
+                //    var holdTimeMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f); //this changes power based on hold time
+                //    var force = holdTimeMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;
+                //    var forceOnAxis = forceAxis * force;
+
+                //    ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
+                //    ballState.BallThrownBy(gameObject);
+
+                //    CmdStartThrowAnimation();
+                //    CmdSetPowerOverlay(0f);
+
+                //    _currentHoldTime = 0f;
+                //});
+
+                ThrowBallAction(ball);
+                CmdSetBallThrown(ball);
+
+                //var ballBody = ball.GetComponent<Rigidbody>();
+                //var ballState = ball.GetComponent<BallThrownState>();
+
+                //var forceAxis = transform.GetComponentInChildren<Camera>().transform.forward;
+                //var holdTimeMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f); //this changes power based on hold time
+                //var force = holdTimeMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;
+                //var forceOnAxis = forceAxis * force;
+
+                //ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
+                //ballState.BallThrownBy(gameObject);
+
+                CmdStartThrowAnimation();
+                CmdSetPowerOverlay(0f);
+
                 _currentHoldTime = 0f;
             }
         }
     }
     
-    [Command]
-    private void CmdThrowBall(GameObject ball, Vector3 forceAxis)
+    private void ThrowBallAction(GameObject ball)//NetworkInstanceId networkId)
     {
+        //var ball = NetworkServer.objects[networkId];
         var ballBody = ball.GetComponent<Rigidbody>();
-        
-        var forceMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f); //this changes power based on hold time
-        var force = forceMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;
+        var ballState = ball.GetComponent<BallThrownState>();
+
+        var forceAxis = transform.GetComponentInChildren<Camera>().transform.forward;
+        var holdTimeMultiplier = Mathf.Min(_currentHoldTime / _maxPowerHoldTime, 1.00f); //this changes power based on hold time
+        var force = holdTimeMultiplier * (_maxThrowPower - _minThrowPower) + _minThrowPower;
         var forceOnAxis = forceAxis * force;
 
         ballBody.AddForce(forceOnAxis, ForceMode.VelocityChange); //we don't want to have to worry about the weight of the ball... at least not yet
+        ballState.BallThrownBy(gameObject);
 
-        SetThrown(ball);
-        StartThrowAnimation();
+        //CmdStartThrowAnimation();
+        //CmdSetPowerOverlay(0f);
 
         _currentHoldTime = 0f;
     }
-    
-    private void SetThrown(GameObject ball)
-    {
-        var ballState = ball.GetComponent<BallThrownState>();
 
-        ballState.BallThrownBy(this.gameObject);
-    }
-    
-    private void StartThrowAnimation()
+    [Command]
+    private void CmdSetBallThrown(GameObject ball)//(NetworkInstanceId networkId)
     {
-        _animationSwitcher.ThrowBall();
+        ball.GetComponent<BallThrownState>().BallThrownBy(gameObject);
     }
 
     //[Command]
-    //private void CmdSetThrown(GameObject ball)
+    //private void CmdThrowBallAction(GameObject ball)//(NetworkInstanceId networkId)
     //{
-    //    var ballState = ball.GetComponent<BallThrownState>();
+    //    //RpcThrowBallAction(ball);
 
-    //    ballState.BallThrownBy(this.gameObject);
+    //    ThrowBallAction(ball);
     //}
+
+    [ClientRpc]
+    private void RpcThrowBallAction(GameObject ball)//(NetworkInstanceId networkId)
+    {
+        ThrowBallAction(ball);
+    }
 
     [Command]
     private void CmdSetPowerOverlay(float percentage)
@@ -105,9 +141,9 @@ public class ThrowBall : BaseBehavior
         _animationSwitcher.AimBall();
     }
 
-    //[Command]
-    //private void CmdStartThrowAnimation()
-    //{
-    //    _animationSwitcher.ThrowBall();
-    //}
+    [Command]
+    private void CmdStartThrowAnimation()
+    {
+        _animationSwitcher.ThrowBall();
+    }
 }
