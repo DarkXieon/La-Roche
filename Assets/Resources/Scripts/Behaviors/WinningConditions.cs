@@ -109,11 +109,11 @@ public class WinningConditions : NetworkBehaviour
         {
             string playerName = winners[i].GetComponent<PlayerStats>().PlayerName;
 
-            if (i == _overlays.Length - 2)
+            if (i == winners.Length - 2)
             {
                 playerName += ", and ";
             }
-            if (i < _overlays.Length - 2)
+            if (i < winners.Length - 2)
             {
                 playerName += ", ";
             }

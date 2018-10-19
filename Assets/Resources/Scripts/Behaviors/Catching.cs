@@ -34,40 +34,30 @@ public class Catching : BaseBehavior
     // Update is called once per frame
     private void Update()
     {
-        var camera = Camera;
-
-        // This will cast rays only against colliders in layer 9 (the ball's layer)
-        int layerMask = 1 << 9;
-
-        if (isLocalPlayer)
+        if(isLocalPlayer)
         {
-            //var ray = camera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-            //bool canHit = Physics.Raycast(ray, catchDistance, layerMask);
+            var camera = Camera;
+
+            // This will cast rays only against colliders in layer 9 (the ball's layer)
+            int layerMask = 1 << 9;
+
             bool canHit = Physics.Raycast(camera.transform.position, camera.transform.forward, catchDistance, layerMask);
 
             var cursorColor = canHit
                 ? Color.green
                 : Color.red;
 
-            CmdSetCursorColor(/*gameObject, */cursorColor);
-        }
-        //var camera = Camera;
+            CmdSetCursorColor(cursorColor);
 
-        // This will cast rays only against colliders in layer 9 (the ball's layer)
-        //int layerMask = 1 << 9;
-        
-        RaycastHit hit;
-        
-        // If the ball is catchable...
-        if (catchable == true)
-        {
+            RaycastHit hit;
+
             // And if the "Fire2" input is pressed down
-            if (_inputState.IsPressed(Buttons.CATCH) && _inputState.GetButtonHoldTime(Buttons.CATCH) == 0f)
+            if (canHit && _inputState.IsPressed(Buttons.CATCH) && _inputState.GetButtonHoldTime(Buttons.CATCH) == 0f)
             {
                 // Need to find a way to use camera instead of this.transform.position, maybe a drag-in-drop or public variable to be set
                 // Does the ray intersect any object in the ball layer
                 bool caught = Physics.Raycast(camera.transform.position, camera.transform.forward, out hit, catchDistance, layerMask);
-                
+
                 if (caught)
                 {
                     CmdStartCatchAnimation();
@@ -81,37 +71,28 @@ public class Catching : BaseBehavior
                     LobbyManager.singleton.client.Send(MyMessageTypes.BallCaughtMessage, ballCaughtMessage);
 
                     _holdingState.StartHoldingBall(hit.transform.gameObject);
-                    /*
-                    CmdCatchBall(this.gameObject, hit.transform.gameObject);
-
-                    // Set the ball to be a child of the player
-                    _holdingState.StartHoldingBall(hit.transform.gameObject);
-                    
-                    // Set the ball to uncatchable 
-                    catchable = false;
-                    */
                 }
             }
         }
     }
     
-    private void OnTriggerEnter(Collider other)
-    {
-        // If the player enters the ball collider, set catchable as true
-        if (other.attachedRigidbody.tag == "Ball")
-        {
-            catchable = true;
-        }
-    }
+    //private void OnTriggerEnter(Collider other)
+    //{
+    //    // If the player enters the ball collider, set catchable as true
+    //    if (other.attachedRigidbody.tag == "Ball")
+    //    {
+    //        catchable = true;
+    //    }
+    //}
 
-    private void OnTriggerExit(Collider other)
-    {
-        // If the player leaves the ball collider, set catchable as false
-        if (other.attachedRigidbody.tag == "Ball")
-        {
-            catchable = false;
-        }
-    }
+    //private void OnTriggerExit(Collider other)
+    //{
+    //    // If the player leaves the ball collider, set catchable as false
+    //    if (other.attachedRigidbody.tag == "Ball")
+    //    {
+    //        catchable = false;
+    //    }
+    //}
 
     [Command]
     private void CmdSetCursorColor(Color color)

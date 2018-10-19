@@ -402,6 +402,8 @@ public class NetworkPlayer : NetworkMessageHandler
 
         NetworkManager.singleton.client.Send(clientToServerMessageNumber, _msg);
     }
+
+    [Client]
     private void FixedUpdate()
     {
         if(initialStart && !hasAuthority)
@@ -413,7 +415,24 @@ public class NetworkPlayer : NetworkMessageHandler
             NetworkLerpBall();
         }
     }
+
+    [Command]
+    public void CmdDebugChange(Vector3 startingAt, Vector3 currentlyAt, Vector3 goingTo)
+    {
+        Debug.Log(string.Format("Started at: {0} \nCurrently at: {1} \nGoing to: {2}", startingAt, currentlyAt, goingTo));
+    }
     
+    private void DebugChange()
+    {
+        var authorityPlayer = FindObjectsOfType<NetworkIdentity>()
+            .Where(player => player.hasAuthority)
+            .Select(player => player.GetComponent<NetworkPlayer>())
+            .Single();
+
+        Debug.Log(string.Format("Started at: {0} \nCurrently at: {1} \nGoing to: {2}", lastRealPosition, transform.position, realPosition));
+        //authorityPlayer.CmdDebugChange(lastRealPosition, transform.position, realPosition);
+    }
+
     private void NetworkLerp()
     {
         if(isLerpingPosition)
@@ -421,6 +440,8 @@ public class NetworkPlayer : NetworkMessageHandler
             float lerpPercentage = (Time.time - timeStartedLerping) / timeToLerp;
 
             transform.position = Vector3.Lerp(lastRealPosition, realPosition, lerpPercentage);
+
+            CmdDebugChange(lastRealPosition, transform.position, realPosition);
         }
 
         if(isLerpingRotation)

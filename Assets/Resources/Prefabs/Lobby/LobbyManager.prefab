@@ -888,9 +888,9 @@ MonoBehaviour:
     m_MaxNetSimulatorTimeout: 12000
   m_Channels: 0500000000000000
   m_UseWebSockets: 0
-  m_UseSimulator: 0
-  m_SimulatedLatency: 100
-  m_PacketLossPercentage: 5
+  m_UseSimulator: 1
+  m_SimulatedLatency: 200
+  m_PacketLossPercentage: 10
   m_MaxBufferedPackets: 16
   m_AllowFragmentation: 1
   m_MatchHost: mm.unet.unity3d.com
@@ -900,7 +900,7 @@ MonoBehaviour:
   isNetworkActive: 0
   matchMaker: {fileID: 0}
   m_ShowLobbyGUI: 1
-  m_MaxPlayers: 8
+  m_MaxPlayers: 4
   m_MaxPlayersPerConnection: 1
   m_MinPlayers: 1
   m_LobbyPlayerPrefab: {fileID: 11487034, guid: 1e49071983b63f34c89517d80c0f5f5c,

@@ -65,6 +65,7 @@ public class PlayerHoldingState : NetworkBehaviour
             if (_timeLeft > 0)
             {
                 _timeLeft -= Time.deltaTime;
+                _ball.transform.localPosition = Vector3.zero;
                 
                 if (_timeLeft <= _maxHoldTime - MaxRunWithBallTime)
                 {
@@ -103,6 +104,10 @@ public class PlayerHoldingState : NetworkBehaviour
             {
                 CmdStartHoldingBall(ball.GetComponent<NetworkIdentity>(), GetComponent<NetworkIdentity>());
             }
+
+            var networkPlayer = GetComponent<NetworkPlayer>();
+            networkPlayer.isLerpingPositionBall = false;
+            networkPlayer.isLerpingRotationBall = false;
 
             Debug.Log("Now it should DEFINATLY be sending updates");
 
