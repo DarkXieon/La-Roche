@@ -64,7 +64,7 @@ public class BallCollisionHandler : NetworkBehaviour
     
     private void BallCaughtMessageHandler(NetworkMessage networkMessage)
     {
-        ForceStopHolding();
+        //ForceStopHolding();
             
         var message = networkMessage.ReadMessage<BallCaughtMessage>();
 
@@ -72,14 +72,13 @@ public class BallCollisionHandler : NetworkBehaviour
         var ballThrownState = ball.GetComponent<BallThrownState>();
 
         var caughtBy = _ballAndPlayers[message.CaughtById];
+        var thrownBy = ballThrownState.ThrownBy;
+        var throwerCondition = thrownBy.GetComponent<PlayerConditionState>();
 
         if (ballThrownState.WasThrown)
         {
             if (ballThrownState.ThrownBy != null)
             {
-                var thrownBy = ballThrownState.ThrownBy;
-
-                var throwerCondition = thrownBy.GetComponent<PlayerConditionState>();
                 var caughtByCondition = caughtBy.GetComponent<PlayerConditionState>();
                 var playersBackIn = throwerCondition.PlayersEliminated;
 
@@ -98,6 +97,15 @@ public class BallCollisionHandler : NetworkBehaviour
             {
                 Debug.LogError("Ball was thrown but no ball thrower found.");
             }
+        }
+        if(throwerCondition.IsOut)
+        {
+            throwerCondition.GetIn();
+
+            _ballAndPlayers.Values
+                .Except(new GameObject[] { ball })
+                .Select(player => player.GetComponent<PlayerConditionState>())
+                .ForEach(player => player.GetPlayerIn(thrownBy));
         }
 
         ballThrownState.WasThrown = false;

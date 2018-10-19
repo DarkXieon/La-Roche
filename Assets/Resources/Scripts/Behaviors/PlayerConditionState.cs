@@ -43,6 +43,11 @@ public class PlayerConditionState : NetworkBehaviour
         _animationSwitcher.GetIn();
     }
 
+    public void GetPlayerIn(GameObject player)
+    {
+        _playersGottenOut.Remove(player);
+    }
+
     public void GetPlayerOut(GameObject player)
     {
         _playersGottenOut.Add(player);

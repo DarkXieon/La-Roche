@@ -1291,7 +1291,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Ready: 0
   playerID: 
-  networkSendRate: 10
+  networkSendRate: 16
   timeBetweenMovementStart: 0
   timeBetweenMovementEnd: 0
   isLerpingPosition: 0
